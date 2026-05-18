@@ -270,7 +270,7 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo }) {
   );
 }
 
-function POICard({ poi }) {
+export function POICard({ poi }) {
   const contactPoi = withContactOverride(poi, 'poi');
   return (
     <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
@@ -311,7 +311,7 @@ function POICard({ poi }) {
   );
 }
 
-function TrailCard({ trail }) {
+export function TrailCard({ trail }) {
   const note = trail.samoyedNote || trail.seniorDogNote;
   const contactTrail = withContactOverride(trail, 'trails');
   return (
@@ -361,7 +361,7 @@ function TrailCard({ trail }) {
   );
 }
 
-function RestaurantCard({ restaurant }) {
+export function RestaurantCard({ restaurant }) {
   const contactRestaurant = withContactOverride(restaurant, 'restaurants');
   return (
     <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
@@ -398,7 +398,7 @@ function RestaurantCard({ restaurant }) {
   );
 }
 
-function LodgingCard({ lodging }) {
+export function LodgingCard({ lodging }) {
   const contactLodging = withContactOverride(lodging, 'lodging');
   const priceClass = {
     '$$':   'text-leaf-600',

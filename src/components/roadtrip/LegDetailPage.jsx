@@ -1,5 +1,7 @@
-import { ChevronLeft, Car } from 'lucide-react';
+import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import TripRouteMap from './TripRouteMap';
+import { POICard, TrailCard, RestaurantCard, LodgingCard } from './TripDetail';
 
 export default function LegDetailPage({ trip, day, onBack }) {
   const legMapPoints = (trip.route.mapPoints || []).filter(p => p.day === day.day);
@@ -16,6 +18,38 @@ export default function LegDetailPage({ trip, day, onBack }) {
       mapPoints: legMapPoints,
     },
   } : null;
+
+  // Resource filtering — same logic as TripDetail
+  const legNumber = day.day;
+
+  const normalize = value =>
+    (value || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  const itemMatchesLeg = (item, keywords) => {
+    const haystack = [
+      item.name, item.location, item.address, item.description,
+      item.cuisine, item.type, item.tags && item.tags.join(' '),
+    ].filter(Boolean).join(' ');
+    return keywords.some(k => normalize(haystack).includes(normalize(k)));
+  };
+
+  const legKeywords = (() => {
+    const fromTo = day.title.split(/→|to|-/i).map(s => s.trim()).filter(Boolean);
+    const stopNames = trip.route.stops.map(s => s.name);
+    return [...fromTo, ...stopNames];
+  })();
+
+  const filterByLeg = item => {
+    if (item?.day === legNumber) return true;
+    if (legKeywords.length === 0) return false;
+    return itemMatchesLeg(item, legKeywords);
+  };
+
+  const legPoi         = (trip.poi         || []).filter(filterByLeg);
+  const legTrails      = (trip.trails      || []).filter(filterByLeg);
+  const legRestaurants = (trip.restaurants || []).filter(filterByLeg);
+  const legLodging     = (trip.lodging     || []).filter(filterByLeg);
+  const hasRestaurants = Array.isArray(trip.restaurants) && trip.restaurants.length > 0;
 
   return (
     <div className="space-y-6">
@@ -94,6 +128,74 @@ export default function LegDetailPage({ trip, day, onBack }) {
           </ol>
         </div>
       )}
+
+      {/* Tabbed resources */}
+      <Tabs defaultValue="poi">
+        <TabsList className={`grid w-full ${hasRestaurants ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <TabsTrigger value="poi" className="flex items-center gap-1.5 text-xs">
+            <MapPin className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Points of Interest</span>
+            <span className="sm:hidden">POI</span>
+          </TabsTrigger>
+          <TabsTrigger value="trails" className="flex items-center gap-1.5 text-xs">
+            <Footprints className="w-3.5 h-3.5" />
+            Trails
+          </TabsTrigger>
+          {hasRestaurants && (
+            <TabsTrigger value="restaurants" className="flex items-center gap-1.5 text-xs">
+              <Utensils className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Restaurants</span>
+              <span className="sm:hidden">Eat</span>
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="lodging" className="flex items-center gap-1.5 text-xs">
+            <BedDouble className="w-3.5 h-3.5" />
+            Lodging
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="poi" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {legPoi.length > 0
+              ? legPoi.map(p => (
+                  <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p} />
+                ))
+              : <p className="text-sm text-bark-500">No points of interest for this leg.</p>}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="trails" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {legTrails.length > 0
+              ? legTrails.map(t => (
+                  <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t} />
+                ))
+              : <p className="text-sm text-bark-500">No trails for this leg.</p>}
+          </div>
+        </TabsContent>
+
+        {hasRestaurants && (
+          <TabsContent value="restaurants" className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {legRestaurants.length > 0
+                ? legRestaurants.map(r => (
+                    <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r} />
+                  ))
+                : <p className="text-sm text-bark-500">No restaurants for this leg.</p>}
+            </div>
+          </TabsContent>
+        )}
+
+        <TabsContent value="lodging" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {legLodging.length > 0
+              ? legLodging.map(l => (
+                  <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l} />
+                ))
+              : <p className="text-sm text-bark-500">No lodging for this leg.</p>}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
