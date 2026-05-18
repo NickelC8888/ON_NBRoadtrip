@@ -40,6 +40,16 @@ export default function RoadTripPlanner() {
   if (selectedLeg) {
     const legTrip = TRIPS.find(t => t.id === selectedLeg.tripId);
     const legDay = legTrip?.route.itinerary.find(d => d.day === selectedLeg.dayNumber);
+    if (!legTrip || !legDay) {
+      return (
+        <div className="p-8 text-bark-700">
+          <button onClick={handleBackFromLeg} className="text-sm text-sun-700 font-semibold mb-4">
+            ← Back
+          </button>
+          <p className="text-sm text-bark-500">Leg not found.</p>
+        </div>
+      );
+    }
     return (
       <div className="p-8 text-bark-700">
         <button onClick={handleBackFromLeg} className="text-sm text-sun-700 font-semibold mb-4 flex items-center gap-1">
@@ -132,6 +142,7 @@ export default function RoadTripPlanner() {
               onClick={() => {
                 setActiveSeason(s.id);
                 setSelectedTripId(null);
+                setSelectedLeg(null);
               }}
               className={`
                 px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200
