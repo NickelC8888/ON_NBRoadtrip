@@ -3,6 +3,7 @@ import { MapPin, Dog, Users, Leaf, Sun } from 'lucide-react';
 import { TRIPS, SEASONS } from '@/data/roadTripData';
 import TripCard from '@/components/roadtrip/TripCard';
 import TripDetail from '@/components/roadtrip/TripDetail';
+import LegDetailPage from '@/components/roadtrip/LegDetailPage';
 
 export default function RoadTripPlanner() {
   const [selectedTripId, setSelectedTripId] = useState(null);
@@ -51,13 +52,11 @@ export default function RoadTripPlanner() {
       );
     }
     return (
-      <div className="p-8 text-bark-700">
-        <button onClick={handleBackFromLeg} className="text-sm text-sun-700 font-semibold mb-4 flex items-center gap-1">
-          ← Back
-        </button>
-        <h2 className="font-display text-2xl font-bold">Day {legDay?.day}: {legDay?.title}</h2>
-        <p className="text-sm text-bark-500 mt-2">LegDetailPage coming soon…</p>
-      </div>
+      <LegDetailPage
+        trip={legTrip}
+        day={legDay}
+        onBack={handleBackFromLeg}
+      />
     );
   }
 
