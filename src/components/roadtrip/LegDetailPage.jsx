@@ -51,6 +51,49 @@ export default function LegDetailPage({ trip, day, onBack }) {
           <TripRouteMap trip={legTrip} height="450px" />
         </div>
       )}
+
+      {/* Drive segments */}
+      {day.driveSegments && day.driveSegments.length > 0 && (
+        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-card space-y-3">
+          <h3 className="font-display font-semibold text-bark-500 text-xs uppercase tracking-widest flex items-center gap-2">
+            <span className="w-4 h-0.5 bg-sun-400 inline-block rounded-full" />
+            Travel Segments
+          </h3>
+          <div className="space-y-2">
+            {day.driveSegments.map((segment, i) => (
+              <div key={`${segment.from}-${segment.to}-${i}`} className="rounded-lg border border-leaf-100 bg-leaf-50 px-3 py-2">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-xs font-semibold text-bark-700">{segment.from} → {segment.to}</span>
+                  <span className="text-xs font-bold text-leaf-700">{segment.distance} · {segment.time}</span>
+                </div>
+                {segment.note && (
+                  <p className="mt-1 text-xs text-bark-500 leading-snug">{segment.note}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Drive steps */}
+      {day.driveSteps && day.driveSteps.length > 0 && (
+        <div className="bg-white border border-stone-200 rounded-2xl p-4 shadow-card space-y-3">
+          <h3 className="font-display font-semibold text-bark-500 text-xs uppercase tracking-widest flex items-center gap-2">
+            <Car className="w-3.5 h-3.5 text-sun-500" />
+            Driving Directions
+          </h3>
+          <ol className="space-y-1.5">
+            {day.driveSteps.map((step, i) => (
+              <li key={i} className="flex gap-2.5 text-xs text-bark-600">
+                <span className="mt-0.5 w-4 h-4 rounded-full bg-sun-100 border border-sun-300 text-sun-700 font-bold text-[10px] flex items-center justify-center flex-shrink-0">
+                  {i + 1}
+                </span>
+                <span className="leading-snug">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
