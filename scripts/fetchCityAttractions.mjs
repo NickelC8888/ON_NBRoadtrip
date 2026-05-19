@@ -49,6 +49,7 @@ async function fetchCity(name, lat, lon) {
   return (Array.isArray(data) ? data : [])
     .filter(item => {
       if (!item.name || item.name.trim() === '') return false;
+      if (!item.point?.lat || !item.point?.lon) return false;
       const key = item.name.toLowerCase().trim();
       if (seen.has(key)) return false;
       seen.add(key);
@@ -60,7 +61,7 @@ async function fetchCity(name, lat, lon) {
       category: mapCategory(item.kinds),
       coords: [item.point.lat, item.point.lon],
       url: `https://opentripmap.com/en/card/${item.xid}`,
-      dist: Math.round(item.dist),
+      dist: item.dist != null ? Math.round(item.dist) : null,
     }));
 }
 
