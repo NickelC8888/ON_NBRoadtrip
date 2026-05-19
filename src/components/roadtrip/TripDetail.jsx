@@ -783,7 +783,7 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
   );
 }
 
-function SectionLabel({ children }) {
+export function SectionLabel({ children }) {
   return (
     <h3 className="font-display font-semibold text-bark-500 text-xs uppercase tracking-widest flex items-center gap-2">
       <span className="w-4 h-0.5 bg-sun-400 inline-block rounded-full" />
