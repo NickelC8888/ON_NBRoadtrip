@@ -2,6 +2,8 @@ import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils } from 'lucid
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import TripRouteMap from './TripRouteMap';
 import { POICard, TrailCard, RestaurantCard, LodgingCard } from './TripDetail';
+import CityAttractionsSection from './CityAttractionsSection';
+import { OPENTRIPMAP_CITY_ATTRACTIONS } from '@/data/openTripMapCityAttractions';
 
 export default function LegDetailPage({ trip, day, onBack }) {
   const legMapPoints = (trip.route.mapPoints || []).filter(p => p.day === day.day);
@@ -50,6 +52,21 @@ export default function LegDetailPage({ trip, day, onBack }) {
   const legRestaurants = (trip.restaurants || []).filter(filterByLeg);
   const legLodging     = (trip.lodging     || []).filter(filterByLeg);
   const hasRestaurants = Array.isArray(trip.restaurants) && trip.restaurants.length > 0;
+
+  const legCities = (() => {
+    const cityData = OPENTRIPMAP_CITY_ATTRACTIONS[trip.id] || {};
+    const knownCities = Object.keys(cityData);
+    const titleParts = day.title
+      .split(/→|to|-|\|/i)
+      .map(s => s.replace(/\d+\s*km.*$/i, '').trim())
+      .filter(Boolean);
+    return knownCities.filter(city =>
+      titleParts.some(part =>
+        city.toLowerCase().includes(part.toLowerCase()) ||
+        part.toLowerCase().includes(city.toLowerCase())
+      )
+    );
+  })();
 
   return (
     <div className="space-y-6">
@@ -196,6 +213,10 @@ export default function LegDetailPage({ trip, day, onBack }) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {legCities.length > 0 && (
+        <CityAttractionsSection trip={trip} filterCities={legCities} />
+      )}
     </div>
   );
 }
