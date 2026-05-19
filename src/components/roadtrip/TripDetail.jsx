@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CONTACT_OVERRIDES } from '@/data/contactOverrides';
 import TripRouteMap from './TripRouteMap';
 import TripPackingList from './TripPackingList';
+import CityAttractionsSection from './CityAttractionsSection';
 
 // ── badges ───────────────────────────────────────────────────────────────────
 
@@ -628,6 +629,9 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
           ))}
         </div>
       </div>
+
+      {/* City Attractions */}
+      <CityAttractionsSection trip={trip} filterCities={null} />
 
       <div className="bg-white border border-stone-200 rounded-2xl p-4">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
