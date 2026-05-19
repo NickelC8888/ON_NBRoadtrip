@@ -13,7 +13,9 @@ function AttractionCard({ attraction }) {
         </span>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-bark-400">{(attraction.dist / 1000).toFixed(1)} km away</span>
+        <span className="text-xs text-bark-400">
+          {attraction.dist != null ? `${(attraction.dist / 1000).toFixed(1)} km away` : 'Distance unknown'}
+        </span>
         <a
           href={attraction.url}
           target="_blank"
@@ -34,6 +36,7 @@ function CityAccordion({ city, attractions }) {
     <div className="border border-stone-200 rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
         className="w-full flex items-center justify-between px-4 py-3 bg-cream-100 hover:bg-cream-200 transition-colors text-left"
       >
         <div className="flex items-center gap-2">
