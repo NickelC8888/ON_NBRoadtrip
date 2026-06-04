@@ -1,4 +1,4 @@
-# Ontario Family Road Trip Planner
+# Road Trip Planner
 
 Curated 3–7 day round trips from Toronto for families with kids and a dog.
 

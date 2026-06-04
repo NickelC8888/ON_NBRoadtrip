@@ -1,3 +1,5 @@
+import { OPENTRIPMAP_SEGMENT_ATTRACTIONS } from './openTripMapSegmentAttractions';
+
 export const SEASONS = [
   { id: 'all', label: 'All Seasons' },
   { id: 'june', label: 'June' },
@@ -5,7 +7,7 @@ export const SEASONS = [
   { id: 'early-september', label: 'Early September' },
 ];
 
-export const TRIPS = [
+const ALL_TRIPS = [
   // ─────────────────────────────────────────────
   // TRIP 1 — Tobermory & Bruce Peninsula
   // ─────────────────────────────────────────────
@@ -60,16 +62,53 @@ export const TRIPS = [
           day: 1,
           title: 'Toronto → Owen Sound',
           desc: 'Drive ~2.5 hrs via Hwy 400 N then Hwy 26 W. Rest stop in Barrie. Arrive Owen Sound for lunch. Afternoon walk at Harrison Park along the Sydenham River — shaded, flat, and dog-friendly. Overnight Owen Sound.',
+          driveSteps: [
+            'Take Hwy 400 N from Toronto toward Barrie (~1.5 hrs)',
+            'Rest stop in Barrie — good dog walk break at Centennial Park',
+            'Continue on Hwy 26 W through Collingwood toward Owen Sound (~1 hr)',
+            'Arrive Owen Sound — park near Harrison Park for first dog walk',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [44.3894, -79.6903],
+            [44.4990, -80.2170],
+            [44.5667, -80.9333],
+          ],
         },
         {
           day: 2,
           title: 'Owen Sound → Tobermory',
           desc: 'Drive ~1.5 hrs along the scenic Bruce Peninsula. Arrive Tobermory and check in. Afternoon Singing Sands Beach walk (dog-friendly). Explore Little Tub Harbour for dinner.',
+          driveSteps: [
+            'Take Hwy 6 N from Owen Sound through the Bruce Peninsula (~1.5 hrs)',
+            'Pass through Wiarton — great photo stop at the Willie the Groundhog statue',
+            'Continue north on Hwy 6 through Lion\'s Head to Tobermory',
+            'Arrive Tobermory — check in, then head straight to Singing Sands Beach',
+          ],
+          legWaypoints: [
+            [44.5667, -80.9333],
+            [44.7442, -81.1421],
+            [44.9842, -81.2580],
+            [45.2535, -81.6650],
+          ],
         },
         {
           day: 3,
           title: 'The Grotto → Home',
           desc: 'Early morning hike to The Grotto (dogs on leash, rocky but manageable for a fit senior dog). Fish & chips at the harbour. Drive home ~3.5 hrs.',
+          driveSteps: [
+            'Hike The Grotto first (Cyprus Lake trailhead, 5 min from town)',
+            'Return to Tobermory for harbour lunch',
+            'Take Hwy 6 S back through Lion\'s Head and Wiarton to Owen Sound',
+            'Continue on Hwy 10 S to Hwy 400 S into Toronto (~3.5 hrs total drive)',
+          ],
+          legWaypoints: [
+            [45.2535, -81.6650],
+            [44.9842, -81.2580],
+            [44.7442, -81.1421],
+            [44.3894, -79.6903],
+            [43.6532, -79.3832],
+          ],
         },
       ],
     },
@@ -84,6 +123,9 @@ export const TRIPS = [
         tags: ['scenic', 'cave', 'swimming', 'photography'],
         dogNote:
           'Dogs allowed on leash throughout Bruce Peninsula NP trails including The Grotto. Trail is rocky in sections — bring water and take breaks. Not suitable for dogs with mobility issues.',
+        address:
+          'Cyprus Lake Camp Ground, 469 Cyprus Lake Road, Tobermory, ON N0H 2R0, Canada',
+        phone: '',
       },
       {
         name: 'Singing Sands Beach',
@@ -94,6 +136,8 @@ export const TRIPS = [
         tags: ['beach', 'swimming', 'accessible', 'flat'],
         dogNote:
           'Dogs allowed on leash. Completely flat sandy surface — ideal for a senior dog. Shallow warm water to wade in. Bring a collapsible bowl.',
+        address: 'Singing Sands Beach, Tobermory, ON',
+        phone: '',
       },
       {
         name: 'Tobermory Harbour (Little Tub)',
@@ -104,6 +148,8 @@ export const TRIPS = [
         tags: ['village', 'dining', 'waterfront', 'shipwrecks'],
         dogNote:
           'Extremely dog-friendly village. Most outdoor patios welcome leashed dogs. Water bowls often left out by shopkeepers.',
+        address: 'Little Tub Harbour, Tobermory, ON N0H 2R0, Canada',
+        phone: '',
       },
       {
         name: 'Flowerpot Island Boat Tour',
@@ -114,6 +160,8 @@ export const TRIPS = [
         tags: ['boat', 'island', 'views', 'sea caves'],
         dogNote:
           'Dogs not permitted on tour boats. Plan for one adult to remain at the harbour with the dog — Little Tub is a lovely spot to wait.',
+        address: 'Little Tub Harbour, Tobermory, ON N0H 2R0, Canada (boat departures)',
+        phone: '',
       },
       {
         name: 'Harrison Park, Owen Sound',
@@ -124,12 +172,18 @@ export const TRIPS = [
         tags: ['park', 'river', 'trails', 'picnic', 'zoo'],
         dogNote:
           'Mostly flat, shaded riverside paths — excellent for a senior dog. Dogs must be on leash. Drinking water at the river edge.',
+        address: '1800 7th Ave E, Owen Sound, ON',
+        phone: '',
       },
     ],
 
     trails: [
       {
         name: 'Singing Sands Beach Walk',
+        location: 'Tobermory, ON',
+        address: 'Singing Sands Beach, Tobermory, ON',
+        day: 2,
+        phone: '',
         lengthKm: 1.0,
         difficulty: 'easy',
         surface: 'Boardwalk + sand',
@@ -143,6 +197,10 @@ export const TRIPS = [
       },
       {
         name: 'Cyprus Lake Campground Loop',
+        location: 'Tobermory, ON',
+        address: 'Cyprus Lake Trailhead, Tobermory, ON',
+        day: 3,
+        phone: '',
         lengthKm: 2.5,
         difficulty: 'easy',
         surface: 'Gravel path',
@@ -156,6 +214,10 @@ export const TRIPS = [
       },
       {
         name: 'Harrison Park River Trail',
+        location: 'Owen Sound, ON',
+        address: 'Harrison Park, 1800 7th Ave E, Owen Sound, ON',
+        day: 1,
+        phone: '',
         lengthKm: 3.0,
         difficulty: 'easy',
         surface: 'Paved & packed gravel',
@@ -174,6 +236,9 @@ export const TRIPS = [
         name: 'Blue Bay Motel',
         type: 'Motel',
         location: 'Tobermory',
+        address: '270 Bay St, Tobermory, ON',
+        day: 2,
+        phone: '',
         petPolicy: 'Pet-friendly rooms available — confirm at booking',
         familySuitable: true,
         priceRange: '$$',
@@ -184,6 +249,9 @@ export const TRIPS = [
         name: 'Little Tub Harbour Suite Hotel',
         type: 'Hotel',
         location: 'Tobermory village',
+        address: '2205 Little Tub Rd, Tobermory, ON',
+        day: 2,
+        phone: '',
         petPolicy: 'Select pet-friendly rooms (verify when booking)',
         familySuitable: true,
         priceRange: '$$$',
@@ -194,6 +262,9 @@ export const TRIPS = [
         name: 'Tobermory Cottage Rentals (VRBO / Airbnb)',
         type: 'Cottage',
         location: 'Tobermory area',
+        address: 'Multiple Tobermory-area rentals',
+        day: 2,
+        phone: '',
         petPolicy: 'Many listings explicitly dog-friendly — filter by "pets allowed"',
         familySuitable: true,
         priceRange: '$$$',
@@ -205,6 +276,9 @@ export const TRIPS = [
         name: 'Holiday Inn Express Owen Sound',
         type: 'Hotel',
         location: 'Owen Sound (Day 1 overnight)',
+        address: '1130 8th St E, Owen Sound, ON',
+        day: 1,
+        phone: '',
         petPolicy: 'Pet-friendly with fee',
         familySuitable: true,
         priceRange: '$$',
@@ -217,6 +291,9 @@ export const TRIPS = [
       {
         name: 'The Fish & Chip Place',
         location: 'Tobermory',
+        address: '1350 Old Hwy 17, Tobermory, ON',
+        day: 2,
+        phone: '',
         cuisine: 'Seafood / Casual',
         dogFriendly: true,
         kidFriendly: true,
@@ -227,6 +304,9 @@ export const TRIPS = [
       {
         name: 'Crowsnest Pub & Restaurant',
         location: 'Tobermory',
+        address: '5 Bay Street South, Tobermory, ON N0H 2R0, Canada',
+        day: 2,
+        phone: '',
         cuisine: 'Pub / Canadian',
         dogFriendly: true,
         kidFriendly: true,
@@ -237,6 +317,9 @@ export const TRIPS = [
       {
         name: 'Serenity Now Café',
         location: 'Tobermory',
+        address: '1220 Bruce Rd 6, Tobermory, ON',
+        day: 2,
+        phone: '',
         cuisine: 'Café / Breakfast / Lunch',
         dogFriendly: true,
         kidFriendly: true,
@@ -247,6 +330,9 @@ export const TRIPS = [
       {
         name: 'Inglis Falls Restaurant (Owen Sound)',
         location: 'Owen Sound',
+        address: '733 2nd Ave E, Owen Sound, ON',
+        day: 1,
+        phone: '',
         cuisine: 'Canadian / Casual',
         dogFriendly: true,
         kidFriendly: true,
@@ -326,21 +412,62 @@ export const TRIPS = [
           day: 1,
           title: 'Toronto → Gravenhurst',
           desc: "Drive ~1.5 hrs via Hwy 400/11. Explore Muskoka Wharf and tour the kids aboard the historic RMS Segwun steamship. Stroll the harbour docks with the dog. Overnight Gravenhurst.",
+          driveSteps: [
+            'Take Hwy 400 N from Toronto to Barrie (~1 hr)',
+            'Merge onto Hwy 11 N toward Orillia and Gravenhurst (~30 min)',
+            'Exit at Gravenhurst — follow signs to Muskoka Wharf',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [44.3894, -79.6903],
+            [44.6458, -79.3752],
+            [44.9185, -79.3621],
+          ],
         },
         {
           day: 2,
           title: 'Gravenhurst → Bracebridge',
           desc: "20 min drive. Morning at Bracebridge Falls (free, dog-friendly). Afternoon at Santa's Village — summer rides, waterslides, and the kids' favourite. Dog stays comfortably in a cool shaded car during rides.",
+          driveSteps: [
+            'Take Hwy 11 N from Gravenhurst to Bracebridge (~20 min)',
+            'Bracebridge Falls is a 2-min walk from downtown parking',
+            'Santa\'s Village is 5 min west on Hwy 118',
+          ],
+          legWaypoints: [
+            [44.9185, -79.3621],
+            [45.0397, -79.3097],
+          ],
         },
         {
           day: 3,
           title: 'Bracebridge → Huntsville → Arrowhead',
           desc: "Drive 30 min north to Huntsville. Morning hike to Stubb's Falls in Arrowhead Provincial Park — spectacular and easy. Afternoon swim at the park beach.",
+          driveSteps: [
+            'Take Hwy 11 N from Bracebridge to Huntsville (~25 min)',
+            'Continue 8 km north of Huntsville on Hwy 11 to Arrowhead Provincial Park entrance',
+            'Park at the Stubb\'s Falls trailhead (1.5 km easy trail)',
+          ],
+          legWaypoints: [
+            [45.0397, -79.3097],
+            [45.3283, -79.2183],
+            [45.3720, -79.1500],
+          ],
         },
         {
           day: 4,
           title: 'Huntsville → Toronto',
           desc: 'Optional morning paddle or Island Lake loop trail. Drive home ~2.5 hrs via Hwy 11/400. Stop in Barrie if needed.',
+          driveSteps: [
+            'Take Hwy 11 S from Huntsville through Gravenhurst to Barrie (~1.5 hrs)',
+            'Optional rest/coffee stop in Barrie',
+            'Continue on Hwy 400 S into Toronto (~1 hr)',
+          ],
+          legWaypoints: [
+            [45.3283, -79.2183],
+            [44.9185, -79.3621],
+            [44.3894, -79.6903],
+            [43.6532, -79.3832],
+          ],
         },
       ],
     },
@@ -592,16 +719,51 @@ export const TRIPS = [
           day: 1,
           title: 'Toronto → Kingston',
           desc: 'Drive ~2.5 hrs via Hwy 401 E. Afternoon at Kingston waterfront — Fort Henry National Historic Site for the kids (outdoor grounds are dog-friendly). Evening stroll along the Lake Ontario waterfront path.',
+          driveSteps: [
+            'Take Hwy 401 E from Toronto through Oshawa and Belleville (~2.5 hrs)',
+            'Exit at Division St (Kingston) and follow signs to downtown waterfront',
+            'Fort Henry is on Hwy 2 E, just across the La Salle Causeway',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [43.8971, -78.8658],
+            [44.1340, -77.3993],
+            [44.2307, -76.4950],
+          ],
         },
         {
           day: 2,
           title: 'Kingston → Prince Edward County',
           desc: 'Cross the Bay of Quinte bridge (30 min). Morning in Picton village. Afternoon at Sandbanks — dunes walk with the dog, beach swim for the kids (note dog restrictions on main beaches). Winery patio in the evening.',
+          driveSteps: [
+            'Take Hwy 33 W from Kingston across the Glenora Ferry or Bay Bridge (~30 min)',
+            'Follow County Rd 49 into Picton for the village morning',
+            'Head south on County Rd 12 to Sandbanks Provincial Park entrance',
+          ],
+          legWaypoints: [
+            [44.2307, -76.4950],
+            [44.1003, -77.0220],
+            [44.0081, -77.1380],
+            [43.9174, -77.2432],
+          ],
         },
         {
           day: 3,
           title: 'County → Toronto',
           desc: 'Morning at Macaulay Mountain Conservation Area or a farm market run. Drive home via Hwy 401 W, ~2.5 hrs.',
+          driveSteps: [
+            'Head back to Kingston via County Rd 49 and Hwy 33 (~30 min)',
+            'Join Hwy 401 W at Kingston toward Toronto',
+            'Optional stop in Oshawa or Ajax (~2 hrs from Kingston)',
+            'Continue on 401 W into Toronto (~2.5 hrs total)',
+          ],
+          legWaypoints: [
+            [44.0081, -77.1380],
+            [44.2307, -76.4950],
+            [44.1340, -77.3993],
+            [43.8971, -78.8658],
+            [43.6532, -79.3832],
+          ],
         },
       ],
     },
@@ -853,21 +1015,65 @@ export const TRIPS = [
           day: 1,
           title: 'Toronto → Kingston',
           desc: 'Drive 2.5 hrs via Hwy 401 E. Afternoon at Kingston Waterfront — Fort Henry National Historic Site for the kids (outdoor grounds dog-friendly). Evening stroll along the Lake Ontario waterfront.',
+          driveSteps: [
+            'Take Hwy 401 E from Toronto through Oshawa (~1 hr)',
+            'Continue east through Belleville to Kingston (~1.5 hrs more)',
+            'Exit Division St into downtown Kingston',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [43.8971, -78.8658],
+            [44.1340, -77.3993],
+            [44.2307, -76.4950],
+          ],
         },
         {
           day: 2,
           title: 'Kingston → Ottawa',
           desc: 'Drive 2 hrs via Hwy 401/416. Check in and explore Parliament Hill, walk to ByWard Market (incredible for foodies!), and evening stroll along the Rideau Canal pathway with the dog.',
+          driveSteps: [
+            'Take Hwy 401 E from Kingston to the Hwy 416 N junction at Prescott (~45 min)',
+            'Follow Hwy 416 N directly into Ottawa (~45 min)',
+            'Exit at Bronson Ave toward downtown / Parliament Hill',
+          ],
+          legWaypoints: [
+            [44.2307, -76.4950],
+            [44.7151, -75.5222],
+            [45.2733, -75.8577],
+            [45.4215, -75.6972],
+          ],
         },
         {
           day: 3,
           title: 'Ottawa Museums + Gatineau Park',
           desc: 'Morning at Canadian Museum of Nature (kids\' favourite — plan for one adult with dog at nearby Dundonald Park). Afternoon drive to Gatineau Park, QC — Pink Lake lookout trail and a picnic.',
+          driveSteps: [
+            'Canadian Museum of Nature is 10 min walk from Parliament Hill (or drive on Metcalfe St)',
+            'Cross the Alexandra Bridge or Macdonald-Cartier Bridge into Gatineau (~10 min)',
+            'Follow Blvd Taché to Gatineau Park — Pink Lake trailhead is 15 min from the bridge',
+          ],
+          legWaypoints: [
+            [45.4215, -75.6972],
+            [45.4765, -75.7013],
+            [45.5317, -75.8477],
+          ],
         },
         {
           day: 4,
           title: 'Ottawa → Kingston → Toronto',
           desc: 'Morning stroll along Ottawa River Pathway. Drive home ~4.5 hrs via Hwy 416/401. Optional stop in Kingston for coffee.',
+          driveSteps: [
+            'Take Hwy 416 S from Ottawa to the 401 junction at Prescott (~45 min)',
+            'Follow Hwy 401 W through Kingston (~45 min) — optional coffee stop',
+            'Continue on Hwy 401 W through Belleville, Oshawa to Toronto (~2.5 hrs)',
+          ],
+          legWaypoints: [
+            [45.4215, -75.6972],
+            [44.7151, -75.5222],
+            [44.2307, -76.4950],
+            [43.8971, -78.8658],
+            [43.6532, -79.3832],
+          ],
         },
       ],
     },
@@ -1155,36 +1361,210 @@ export const TRIPS = [
           day: 1,
           title: 'Toronto → Kingston  |  263 km · 2.5 hrs',
           desc: "Easy first driving day. Arrive Kingston by late morning. Grab lunch at Pan Chancho Bakery. Afternoon at Fort Henry National Historic Site with the kids — outdoor ramparts and cannon firings. Evening waterfront walk with the dog along Lake Ontario. Early dinner at The Merchant Taphouse.",
+          driveSegments: [
+            {
+              from: 'Toronto',
+              to: 'Port Hope / Cobourg',
+              distance: '110 km',
+              time: '1-1.25 hrs',
+              note: 'Quick stretch, washroom, and dog-water stop before the longer 401 run.',
+            },
+            {
+              from: 'Port Hope / Cobourg',
+              to: 'Kingston',
+              distance: '150 km',
+              time: '1.5 hrs',
+              note: 'Finish the main leg and arrive with enough time for lunch and Fort Henry.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 401 E from Toronto through Oshawa (~1 hr)',
+            'Continue through Belleville to Kingston exit (Division St) (~1.5 hrs more)',
+            'Fort Henry is 5 min from downtown on Hwy 2 E across La Salle Causeway',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [43.8971, -78.8658],
+            [44.1340, -77.3993],
+            [44.2307, -76.4950],
+          ],
         },
         {
           day: 2,
           title: 'Kingston → Ottawa  |  195 km · 2 hrs',
           desc: "Morning drive along the 401/416. Check in and drop bags. Afternoon: Parliament Hill and the Changing of the Guard ceremony (dog welcome on the lawn). Walk the Rideau Canal Pathway. ByWard Market for a late lunch — BeaverTails are mandatory. Evening at Major's Hill Park with great views of the Château Laurier.",
+          driveSegments: [
+            {
+              from: 'Kingston',
+              to: 'Prescott / Hwy 416 junction',
+              distance: '95 km',
+              time: '1 hr',
+              note: 'Simple highway segment with a good reset before turning north.',
+            },
+            {
+              from: 'Prescott / Hwy 416 junction',
+              to: 'Ottawa',
+              distance: '100 km',
+              time: '1 hr',
+              note: 'Direct run into the city; aim to arrive before downtown afternoon traffic.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 401 E from Kingston to Hwy 416 N junction at Prescott (~45 min)',
+            'Follow Hwy 416 N directly into Ottawa (~45 min)',
+            'Exit Bronson Ave toward Parliament Hill / downtown core',
+          ],
+          legWaypoints: [
+            [44.2307, -76.4950],
+            [44.7151, -75.5222],
+            [45.2733, -75.8577],
+            [45.4215, -75.6972],
+          ],
         },
         {
           day: 3,
           title: 'Ottawa + Gatineau Park  |  No driving (day trips only)',
           desc: "Full Ottawa day. Morning: Canadian Museum of Nature for kids — one adult takes the dog to nearby Dundonald Park (excellent off-leash area). Afternoon: drive 15 min to Gatineau Park, QC for the Pink Lake lookout trail (bring lots of water for the Samoyed). Evening: Ottawa River Pathway sunset walk.",
+          driveSteps: [
+            'Museum of Nature: 240 McLeod St — 10 min walk from Parliament or drive on Metcalfe',
+            'Cross Alexandra Bridge into Gatineau (~10 min)',
+            'Follow Blvd Taché to Gatineau Park — Pink Lake trailhead is 15 min from bridge',
+            'Return via same bridge for evening walk on Ottawa River Pathway',
+          ],
+          legWaypoints: [
+            [45.4215, -75.6972],
+            [45.4765, -75.7013],
+            [45.5317, -75.8477],
+          ],
         },
         {
           day: 4,
           title: 'Ottawa → Montréal  |  200 km · 2 hrs',
           desc: "Morning drive via Hwy 417 E. Arrive Montréal early afternoon. Check in near Old Montréal. Afternoon walk through Vieux-Montréal cobblestone streets and the Vieux-Port waterfront — both excellent with dogs. Kids love the old fortification walls. Dinner on a Old Montréal terrasse.",
+          driveSegments: [
+            {
+              from: 'Ottawa',
+              to: 'Vankleek Hill / Hawkesbury area',
+              distance: '95 km',
+              time: '1 hr',
+              note: 'Easy midpoint stretch before crossing deeper into Quebec traffic.',
+            },
+            {
+              from: 'Vankleek Hill / Hawkesbury area',
+              to: 'Montreal',
+              distance: '105 km',
+              time: '1-1.25 hrs',
+              note: 'Plan a little buffer for Montreal approaches and downtown parking.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 417 E (Queensway) east out of Ottawa',
+            'Cross into Québec — highway becomes Autoroute 40 E toward Montréal',
+            'Follow A-20 E to the Vieux-Montréal / downtown exits (~2 hrs total)',
+          ],
+          legWaypoints: [
+            [45.4215, -75.6972],
+            [45.4550, -74.4850],
+            [45.5080, -73.5673],
+          ],
         },
         {
           day: 5,
           title: 'Montréal — full day  |  No driving',
           desc: "BIG day. Early morning (7 am): Mount Royal Park hike via Chemin Olmsted before the heat — essential for the Samoyed. Back down by 10 am. Late morning: Atwater Market for provisions. Afternoon: Lachine Canal linear path (flat, paved, shaded sections). Late afternoon: the famous Schwartz's smoked meat sandwiches on Saint-Laurent. Dog waits outside and gets all the attention from the queue.",
+          driveSteps: [
+            'Mount Royal: park at Camillien-Houde Pkwy or walk from plateau (~15 min)',
+            'Atwater Market: 138 Atwater Ave — short drive or metro from downtown',
+            'Lachine Canal path: access from Atwater Market heading SW (flat, 11 km one-way)',
+            'Schwartz\'s: 3895 Blvd Saint-Laurent — drive or 20 min walk from canal',
+          ],
+          legWaypoints: [
+            [45.5017, -73.5673],
+            [45.5048, -73.5882],
+            [45.4752, -73.5885],
+            [45.4671, -73.5947],
+          ],
         },
         {
           day: 6,
           title: 'Montréal → Prince Edward County  |  280 km · 3 hrs',
           desc: "Morning drive back through Kingston and across to The County. Arrive for lunch in Picton. Afternoon: Macaulay Mountain Conservation Area trail or a winery patio (Norman Hardie is very dog-friendly). Lake on the Mountain sunset lookout. Overnight in the County.",
+          driveSegments: [
+            {
+              from: 'Montreal',
+              to: 'Cornwall / Ontario border',
+              distance: '115 km',
+              time: '1.25 hrs',
+              note: 'Good first reset after leaving city traffic.',
+            },
+            {
+              from: 'Cornwall / Ontario border',
+              to: 'Kingston',
+              distance: '180 km',
+              time: '1.75-2 hrs',
+              note: 'Main 401 segment; use Kingston as the logical lunch or dog-walk break.',
+            },
+            {
+              from: 'Kingston',
+              to: 'Picton / Prince Edward County',
+              distance: '65 km',
+              time: '45-60 min',
+              note: 'Short county-road finish via the Bay Bridge.',
+            },
+          ],
+          driveSteps: [
+            'Take A-20 W from Montréal back into Ontario, joining Hwy 401 W',
+            'Continue on Hwy 401 W through Kingston (~2 hrs)',
+            'Exit at Hwy 33 W and cross into Prince Edward County via Bay Bridge',
+            'Follow County Rd 49 into Picton (~30 min from Kingston)',
+          ],
+          legWaypoints: [
+            [45.5017, -73.5673],
+            [45.4550, -74.4850],
+            [44.2307, -76.4950],
+            [44.0081, -77.1380],
+          ],
         },
         {
           day: 7,
           title: 'Prince Edward County → Toronto  |  225 km · 2.5 hrs',
           desc: "Relaxed final morning. Farm market run in Picton for local honey and preserves. Optional 30-min Lake on the Mountain walk with the dog. Easy drive home via Hwy 401 W. Back in Toronto by early afternoon — everyone, including the Samoyed, earns a long nap.",
+          driveSegments: [
+            {
+              from: 'Prince Edward County',
+              to: 'Belleville / Hwy 401',
+              distance: '45 km',
+              time: '35-45 min',
+              note: 'Leave the county roads and join the 401 westbound.',
+            },
+            {
+              from: 'Belleville / Hwy 401',
+              to: 'Port Hope / Cobourg',
+              distance: '105 km',
+              time: '1 hr',
+              note: 'Practical final dog walk before GTA traffic.',
+            },
+            {
+              from: 'Port Hope / Cobourg',
+              to: 'Toronto',
+              distance: '110 km',
+              time: '1-1.25 hrs',
+              note: 'Final push home; add buffer for Durham/GTA congestion.',
+            },
+          ],
+          driveSteps: [
+            'Return to Kingston via County Rd 49 and Hwy 33 W (~30 min)',
+            'Join Hwy 401 W at Kingston toward Toronto',
+            'Drive through Belleville and Oshawa (~2 hrs)',
+            'Arrive Toronto — well earned nap for the whole family',
+          ],
+          legWaypoints: [
+            [44.0081, -77.1380],
+            [44.2307, -76.4950],
+            [44.1340, -77.3993],
+            [43.8971, -78.8658],
+            [43.6532, -79.3832],
+          ],
         },
       ],
     },
@@ -1630,4 +2010,1156 @@ export const TRIPS = [
         'The sweet spot for this circuit. Cooler temperatures (15–22°C) make hiking genuinely enjoyable for the Samoyed without the extreme heat precautions. Gatineau Park shows the first fall colour. PEC harvest season is extraordinary. Crowds thin, prices drop after Labour Day. The best overall choice for this trip.',
     },
   },
+
+  // TRIP 6 - New Brunswick Bay of Fundy Loop (7 days)
+  {
+    id: 'new-brunswick-fundy',
+    name: 'New Brunswick Bay of Fundy Loop',
+    tagline: 'Highest tides, red cliffs, covered bridges, and coastal hikes',
+    duration: '7 days',
+    distanceKm: 3000,
+    driveHoursOneWay: 14.5,
+    seasons: ['june', 'late-august', 'early-september'],
+    colorFrom: '#b45309',
+    colorTo: '#0f766e',
+    emoji: 'NB',
+    highlights: ['Quebec City', 'Rimouski', 'Fundy National Park', 'St. Andrews'],
+    tripProfile: {
+      passengers: 'Family of 4',
+      pet: 'One dog',
+      vehicle: 'Road-trip van',
+      dogBreedNote:
+        'This is a long-distance coastal route with several big drive days. Keep hikes early or late in warm weather, pack extra water for the dog, and avoid exposed beach walks at midday in late August.',
+    },
+
+    route: {
+      googleMapsUrl:
+        'https://www.google.com/maps/dir/Toronto,+ON/Quebec+City,+QC/Rimouski,+QC/Fredericton,+NB/Alma,+NB/Hopewell+Rocks+Provincial+Park/St.+Andrews,+NB/Quebec+City,+QC/Toronto,+ON',
+      waypoints: [
+        [43.6532, -79.3832],
+        [46.8139, -71.208],
+        [48.4281, -68.522],
+        [45.9636, -66.6431],
+        [45.6002, -64.9474],
+        [45.8236, -64.5751],
+        [45.0738, -67.0531],
+        [46.8139, -71.208],
+        [43.6532, -79.3832],
+      ],
+      stops: [
+        {
+          name: 'Toronto',
+          coords: [43.6532, -79.3832],
+          night: null,
+          description: 'Start early. This route is built as a family-friendly New Brunswick loop with sensible overnight breaks.',
+        },
+        {
+          name: 'Quebec City, QC',
+          coords: [46.8139, -71.208],
+          night: 1,
+          driveFromPrevious: { distance: '800 km', time: '8-8.5 hrs' },
+          description: 'First overnight on the Old Quebec outskirts or in Levis for easier parking. Walk Petit-Champlain, Terrasse Dufferin, and the Citadel exterior.',
+        },
+        {
+          name: 'Rimouski, QC',
+          coords: [48.4281, -68.522],
+          night: 2,
+          driveFromPrevious: { distance: '315 km', time: '3.5 hrs' },
+          description: 'Underrated St. Lawrence stop with waterfront walks, Pointe-au-Pere Lighthouse, seafood, and a relaxed dog-friendly pace.',
+        },
+        {
+          name: 'Fredericton, NB',
+          coords: [45.9636, -66.6431],
+          night: 3,
+          driveFromPrevious: { distance: '500 km', time: '5-5.5 hrs' },
+          description: 'Kids decompress after the drive with riverfront trails, covered-bridge detours, parks, breweries, and patios.',
+        },
+        {
+          name: 'Alma / Fundy National Park',
+          coords: [45.6002, -64.9474],
+          night: 4,
+          driveFromPrevious: { distance: '230 km', time: '2.5 hrs' },
+          description: 'Two-night anchor base for Fundy. Do not hotel-hop here: Alma puts you beside the park, the beach, seafood, and Hopewell Rocks.',
+        },
+        {
+          name: 'Hopewell Rocks',
+          coords: [45.8236, -64.5751],
+          night: 5,
+          driveFromPrevious: { distance: '40 km', time: '35-45 min' },
+          description: 'Iconic flowerpot rocks and ocean-floor walking at low tide. Check tide times before going.',
+        },
+        {
+          name: 'St. Andrews by-the-Sea',
+          coords: [45.0738, -67.0531],
+          night: 6,
+          driveFromPrevious: { distance: '300 km', time: '3.5 hrs' },
+          description: 'One of Atlantic Canada\'s best small towns: waterfront, Kingsbrae Garden, whale watching, ice cream, and Ministers Island tide timing.',
+        },
+        {
+          name: 'Quebec City or Riviere-du-Loup',
+          coords: [46.8139, -71.208],
+          night: null,
+          driveFromPrevious: { distance: '520-710 km', time: '5.5-8 hrs' },
+          description: 'Long return transition. Push to Quebec City for a 7-day trip, or stop in Riviere-du-Loup for the much calmer 8-day version.',
+        },
+        {
+          name: 'Toronto',
+          coords: [43.6532, -79.3832],
+          night: null,
+          driveFromPrevious: { distance: '800-980 km', time: '8-10.5 hrs' },
+          description: 'Final drive home.',
+        },
+      ],
+      mapPoints: [
+        {
+          category: 'poi',
+          day: 1,
+          name: 'Kingston Waterfront',
+          location: 'Kingston, ON',
+          coords: [44.2307, -76.4809],
+          note: 'Easy family and dog stretch stop on the long drive east.',
+        },
+        {
+          category: 'poi',
+          day: 1,
+          name: 'Petit-Champlain',
+          location: 'Quebec City, QC',
+          coords: [46.8112, -71.2036],
+          note: 'Atmospheric Old Quebec walk for the first evening.',
+        },
+        {
+          category: 'poi',
+          day: 1,
+          name: 'Terrasse Dufferin',
+          location: 'Quebec City, QC',
+          coords: [46.8127, -71.2048],
+          note: 'Classic boardwalk viewpoint by Chateau Frontenac.',
+        },
+        {
+          category: 'food',
+          day: 1,
+          name: 'Paillard Bakery',
+          location: 'Quebec City, QC',
+          coords: [46.8144, -71.2105],
+          note: 'Bakery stop for breakfast, sandwiches, and road snacks.',
+        },
+        {
+          category: 'food',
+          day: 1,
+          name: 'Chocolats Favoris',
+          location: 'Quebec City, QC',
+          coords: [46.8127, -71.2076],
+          note: 'Kid-friendly dipped ice cream stop.',
+        },
+        {
+          category: 'lodging',
+          day: 1,
+          name: 'Hotel Cofortel',
+          location: 'Quebec City airport area',
+          coords: [46.7908, -71.3548],
+          note: 'Parking-friendly first-night option outside Old Quebec.',
+        },
+        {
+          category: 'poi',
+          day: 2,
+          name: 'Montmorency Falls',
+          location: 'Quebec City area',
+          coords: [46.8908, -71.1475],
+          note: 'High-impact waterfall stop before heading along the St. Lawrence.',
+        },
+        {
+          category: 'poi',
+          day: 2,
+          name: 'Kamouraska Viewpoints',
+          location: 'Kamouraska, QC',
+          coords: [47.5654, -69.8668],
+          note: 'Pretty St. Lawrence village and scenic dog-walk break.',
+        },
+        {
+          category: 'poi',
+          day: 2,
+          name: 'Pointe-au-Pere Lighthouse',
+          location: 'Rimouski, QC',
+          coords: [48.5175, -68.4691],
+          note: 'Lighthouse and maritime site for the Rimouski evening.',
+        },
+        {
+          category: 'lodging',
+          day: 2,
+          name: 'Rimouski Waterfront Stay Area',
+          location: 'Rimouski, QC',
+          coords: [48.4522, -68.5236],
+          note: 'Target pet-friendly motel or cottage options near the water.',
+        },
+        {
+          category: 'poi',
+          day: 3,
+          name: 'Grand Falls Gorge',
+          location: 'Grand Falls, NB',
+          coords: [47.0514, -67.7383],
+          note: 'Memorable gorge stop between Rimouski and Fredericton.',
+        },
+        {
+          category: 'poi',
+          day: 3,
+          name: 'Fredericton Riverfront Trail',
+          location: 'Fredericton, NB',
+          coords: [45.9636, -66.6431],
+          note: 'Decompression walk after the driving day.',
+        },
+        {
+          category: 'food',
+          day: 3,
+          name: 'Fredericton Patio Pub Area',
+          location: 'Downtown Fredericton',
+          coords: [45.9609, -66.6416],
+          note: 'Use this area for brewery or pub patios that welcome dogs.',
+        },
+        {
+          category: 'lodging',
+          day: 3,
+          name: 'Hilton Garden Inn Fredericton',
+          location: 'Fredericton, NB',
+          coords: [45.9616, -66.6414],
+          note: 'Central pet-friendly base to verify before booking.',
+        },
+        {
+          category: 'stop',
+          day: 4,
+          name: 'Alma Beach',
+          location: 'Alma, NB',
+          coords: [45.6002, -64.9474],
+          note: 'Low-tide beach walk beside the Fundy base.',
+        },
+        {
+          category: 'poi',
+          day: 4,
+          name: 'Cape Enrage',
+          location: 'Bay of Fundy, NB',
+          coords: [45.5924, -64.7771],
+          note: 'Lighthouse and cliffside stop near the Fundy coast.',
+        },
+        {
+          category: 'food',
+          day: 4,
+          name: 'Tipsy Tails Restaurant',
+          location: 'Alma, NB',
+          coords: [45.6012, -64.9485],
+          note: 'Easy seafood meal near Fundy National Park.',
+        },
+        {
+          category: 'food',
+          day: 4,
+          name: 'Alma Lobster Shop',
+          location: 'Alma, NB',
+          coords: [45.6008, -64.9479],
+          note: 'Seafood takeout or picnic-style dinner.',
+        },
+        {
+          category: 'lodging',
+          day: 4,
+          name: 'Parkland Village Inn',
+          location: 'Alma, NB',
+          coords: [45.6011, -64.9489],
+          note: 'Good 2-night Fundy base if pet-friendly rooms are available.',
+        },
+        {
+          category: 'lodging',
+          day: 4,
+          name: 'Fundy Highlands',
+          location: 'Alma, NB',
+          coords: [45.5986, -64.9496],
+          note: 'Motel/chalet style stay close to the park entrance.',
+        },
+        {
+          category: 'poi',
+          day: 5,
+          name: 'Hopewell Rocks Provincial Park',
+          location: 'Hopewell Cape, NB',
+          coords: [45.8233, -64.5733],
+          note: 'Ocean-floor walk and flowerpot rocks; tide timing matters.',
+        },
+        {
+          category: 'trail',
+          day: 5,
+          name: 'Dickson Falls Trail',
+          location: 'Fundy National Park',
+          coords: [45.5956, -64.9741],
+          note: 'Short shaded waterfall trail, excellent for kids and dog.',
+        },
+        {
+          category: 'trail',
+          day: 5,
+          name: 'Laverty Falls Trail',
+          location: 'Fundy National Park',
+          coords: [45.6253, -65.0315],
+          note: 'Moderate forest hike to a popular waterfall.',
+        },
+        {
+          category: 'trail',
+          day: 5,
+          name: 'Matthews Head Trail',
+          location: 'Fundy National Park',
+          coords: [45.5817, -64.9662],
+          note: 'Beginner/intermediate coastal forest loop.',
+        },
+        {
+          category: 'trail',
+          day: 5,
+          name: 'Caribou Plains Trail',
+          location: 'Fundy National Park',
+          coords: [45.6118, -65.0094],
+          note: 'Short boardwalk and forest option for a lighter outing.',
+        },
+        {
+          category: 'stop',
+          day: 6,
+          name: 'Saint Andrews Waterfront',
+          location: 'St. Andrews, NB',
+          coords: [45.0738, -67.0531],
+          note: 'Small-town waterfront, shops, patios, and ice cream.',
+        },
+        {
+          category: 'poi',
+          day: 6,
+          name: 'Kingsbrae Garden',
+          location: 'St. Andrews, NB',
+          coords: [45.0774, -67.0558],
+          note: 'Garden stop for the family; confirm pet rules before visiting.',
+        },
+        {
+          category: 'poi',
+          day: 6,
+          name: 'Ministers Island',
+          location: 'Near St. Andrews, NB',
+          coords: [45.064, -67.027],
+          note: 'Tidal road access; check crossing times carefully.',
+        },
+        {
+          category: 'food',
+          day: 6,
+          name: 'Honeybeans Coffee',
+          location: 'St. Andrews, NB',
+          coords: [45.0742, -67.0525],
+          note: 'Coffee and breakfast stop near the waterfront.',
+        },
+        {
+          category: 'food',
+          day: 6,
+          name: 'The Clam Digger',
+          location: 'St. Andrews, NB',
+          coords: [45.0752, -67.0519],
+          note: 'Classic seafood stop; confirm patio dog rules.',
+        },
+        {
+          category: 'lodging',
+          day: 6,
+          name: 'The Algonquin Resort',
+          location: 'St. Andrews, NB',
+          coords: [45.0804, -67.0571],
+          note: 'Signature splurge stay; reserve pet-friendly room specifically.',
+        },
+        {
+          category: 'lodging',
+          day: 6,
+          name: 'Picket Fence Motel',
+          location: 'St. Andrews, NB',
+          coords: [45.079, -67.055],
+          note: 'Practical motel-style option near town.',
+        },
+        {
+          category: 'stop',
+          day: 7,
+          name: 'Riviere-du-Loup Return Break',
+          location: 'Riviere-du-Loup, QC',
+          coords: [47.8358, -69.5369],
+          note: 'Much calmer 8-day return stop than pushing all the way home.',
+        },
+      ],
+      itinerary: [
+        {
+          day: 1,
+          title: 'Toronto to Quebec City',
+          desc: 'Drive about 8 hours. Break at Kingston waterfront, Drummondville, and highway rest areas for dog walks. Stay on the Old Quebec outskirts or in Levis for better parking. Evening: Petit-Champlain, Terrasse Dufferin, Citadel exterior, poutine, crepes, bakeries, and ice cream for the kids.',
+          driveSegments: [
+            {
+              from: 'Toronto',
+              to: 'Kingston',
+              distance: '260 km',
+              time: '2.5 hrs',
+              note: 'Primary morning segment; use the waterfront for a real dog-and-kid reset.',
+            },
+            {
+              from: 'Kingston',
+              to: 'Montreal bypass',
+              distance: '290 km',
+              time: '2.75-3 hrs',
+              note: 'Main cross-border highway segment; keep this as a pass-through unless traffic forces a pause.',
+            },
+            {
+              from: 'Montreal bypass',
+              to: 'Drummondville',
+              distance: '105 km',
+              time: '1-1.25 hrs',
+              note: 'Shorter segment after Montreal traffic; good washroom and snack stop.',
+            },
+            {
+              from: 'Drummondville',
+              to: 'Quebec City / Levis',
+              distance: '150 km',
+              time: '1.5 hrs',
+              note: 'Final push into the overnight area with easier parking outside Old Quebec.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 401 E from Toronto to Kingston (~2.5 hrs) — dog walk break at Kingston Waterfront',
+            'Continue on Hwy 401 E crossing into Québec, becoming Autoroute 20 E',
+            'Pass through Montréal on A-20 E — stay on the highway, no stop needed',
+            'Break at Drummondville rest area (~5.5 hrs from Toronto)',
+            'Continue on A-20 E to Quebec City — exit toward Old Quebec or Lévis (~8 hrs total)',
+          ],
+          legWaypoints: [
+            [43.6532, -79.3832],
+            [44.2307, -76.4950],
+            [45.5017, -73.5673],
+            [45.8844, -72.4911],
+            [46.8139, -71.2080],
+          ],
+        },
+        {
+          day: 2,
+          title: 'Quebec City to Rimouski',
+          desc: 'Drive about 3.5 hours along an underrated, beautiful St. Lawrence stretch. Stop at Montmorency Falls, Kamouraska, and river viewpoints. Rimouski gives you a relaxed waterfront pace, seafood, coastal walks, Pointe-au-Pere Lighthouse, and sunset by the river.',
+          driveSegments: [
+            {
+              from: 'Quebec City',
+              to: 'Kamouraska',
+              distance: '170 km',
+              time: '2 hrs',
+              note: 'Scenic St. Lawrence segment with Montmorency Falls early if you want a short stop.',
+            },
+            {
+              from: 'Kamouraska',
+              to: 'Rimouski',
+              distance: '145 km',
+              time: '1.5 hrs',
+              note: 'Easy coastal finish; arrive with time for the lighthouse and waterfront.',
+            },
+          ],
+          driveSteps: [
+            'Take Autoroute 40 E from Quebec City to Montmorency Falls exit (~15 min)',
+            'Rejoin Hwy 132 E along the south shore of the St. Lawrence — scenic river drive',
+            'Stop at Kamouraska village for a stretch and St. Lawrence views (~2 hrs from QC)',
+            'Continue on Hwy 132 E to Rimouski (~1.5 hrs more)',
+          ],
+          legWaypoints: [
+            [46.8139, -71.2080],
+            [46.8908, -71.1475],
+            [47.5654, -69.8668],
+            [48.4522, -68.5236],
+          ],
+        },
+        {
+          day: 3,
+          title: 'Rimouski to Fredericton',
+          desc: 'Drive about 5 hours. Break at Grand Falls Gorge, covered bridges, and riverfront parks. Evening is for Fredericton trails plus a brewery or pub patio. This is the kids\' decompression night after the bigger driving days.',
+          driveSegments: [
+            {
+              from: 'Rimouski',
+              to: 'Riviere-du-Loup',
+              distance: '110 km',
+              time: '1.25 hrs',
+              note: 'Short first segment before turning inland toward New Brunswick.',
+            },
+            {
+              from: 'Riviere-du-Loup',
+              to: 'Grand Falls',
+              distance: '230 km',
+              time: '2.25-2.5 hrs',
+              note: 'The main transit block; Grand Falls Gorge is the logical full break.',
+            },
+            {
+              from: 'Grand Falls',
+              to: 'Fredericton',
+              distance: '165 km',
+              time: '1.75-2 hrs',
+              note: 'Final highway stretch to the riverfront overnight.',
+            },
+          ],
+          driveSteps: [
+            'Take Trans-Canada Hwy 185 S from Rimouski toward Rivière-du-Loup (~1 hr)',
+            'Cross into New Brunswick on Trans-Canada Hwy 2 S at Edmundston',
+            'Stop at Grand Falls Gorge for a break — exit at Grand Falls off Hwy 2 (~3 hrs)',
+            'Continue on Hwy 2 S to Fredericton (~2 hrs more)',
+          ],
+          legWaypoints: [
+            [48.4522, -68.5236],
+            [47.8278, -69.5378],
+            [47.3628, -68.3255],
+            [47.0594, -67.7404],
+            [45.9636, -66.6431],
+          ],
+        },
+        {
+          day: 4,
+          title: 'Fredericton to Alma / Fundy National Park',
+          desc: 'Drive about 2.5 hours and settle into Alma for 2 nights. This is where the trip becomes memorable. Use Alma as the base for Fundy National Park, Hopewell Rocks, Cape Enrage, Alma beach at low tide, and easy seafood dinners.',
+          driveSegments: [
+            {
+              from: 'Fredericton',
+              to: 'Sussex',
+              distance: '120 km',
+              time: '1.25-1.5 hrs',
+              note: 'Simple highway run; Sussex is the practical grocery/fuel reset.',
+            },
+            {
+              from: 'Sussex',
+              to: 'Alma / Fundy National Park',
+              distance: '75 km',
+              time: '1 hr',
+              note: 'Slower scenic finish on Hwy 114 into the park and village.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 1 E from Fredericton toward Sussex (~1.5 hrs)',
+            'At Sussex, take Hwy 114 S toward Fundy National Park',
+            'Follow Hwy 114 through the park to Alma village (~45 min from Sussex)',
+          ],
+          legWaypoints: [
+            [45.9636, -66.6431],
+            [45.7181, -65.5144],
+            [45.5992, -64.9534],
+          ],
+        },
+        {
+          day: 5,
+          title: 'Full Fundy Day',
+          desc: 'No major driving. Build the day around tide pools, beaches, waterfalls, giant tides, Hopewell Rocks, Dickson Falls, Matthews Head, Laverty Falls, Caribou Plains, or the Fundy Trail Parkway. Excellent Samoyed day: cooler weather, forest trails, water access, and long walks.',
+          driveSteps: [
+            'Hopewell Rocks: 15 min drive east of Alma on Hwy 114 (check tide times!)',
+            'Cape Enrage: 20 min drive from Alma via Hwy 114 and Cape Enrage Rd',
+            'Dickson Falls trailhead: 5 min drive inside Fundy NP from Alma gate',
+            'All local — no highway driving today',
+          ],
+          legWaypoints: [
+            [45.5992, -64.9534],
+            [45.8283, -64.5867],
+            [45.6003, -64.7717],
+            [45.5992, -64.9534],
+          ],
+        },
+        {
+          day: 6,
+          title: 'Alma to Saint Andrews-by-the-Sea',
+          desc: 'Drive about 3.5 hours. Saint Andrews is a better pace than a giant-city stop for a short family trip. Do Kingsbrae Garden, the waterfront, ice cream shops, Ministers Island if tide timing works, and whale watching while one adult handles dog duty.',
+          driveSegments: [
+            {
+              from: 'Alma',
+              to: 'Sussex',
+              distance: '75 km',
+              time: '1 hr',
+              note: 'Backtrack out of Fundy slowly; stop in Sussex if you need supplies.',
+            },
+            {
+              from: 'Sussex',
+              to: 'St. George',
+              distance: '150 km',
+              time: '1.5-1.75 hrs',
+              note: 'Main Hwy 1 westbound segment before the coastal turnoff.',
+            },
+            {
+              from: 'St. George',
+              to: 'Saint Andrews-by-the-Sea',
+              distance: '30 km',
+              time: '30-40 min',
+              note: 'Short coastal finish into town.',
+            },
+          ],
+          driveSteps: [
+            'Return to Sussex via Hwy 114 N (~45 min)',
+            'Take Hwy 1 W from Sussex toward Sussex Corner and St. George',
+            'At St. George, take Hwy 1 W / Hwy 127 S to Saint Andrews-by-the-Sea (~3.5 hrs total)',
+          ],
+          legWaypoints: [
+            [45.5992, -64.9534],
+            [45.7181, -65.5144],
+            [45.3050, -66.0700],
+            [45.0768, -67.0568],
+          ],
+        },
+        {
+          day: 7,
+          title: 'Saint Andrews to Quebec City or Riviere-du-Loup',
+          desc: 'Long transition day. If this must stay 7 days, push to Quebec City and continue home with a very early start. If you can make it 8 days, stop in Riviere-du-Loup instead, which is much better for the family and dog, then return to Toronto relaxed the next day.',
+          driveSegments: [
+            {
+              from: 'Saint Andrews-by-the-Sea',
+              to: 'Fredericton',
+              distance: '135 km',
+              time: '1.5-2 hrs',
+              note: 'First reset point before the long northbound run.',
+            },
+            {
+              from: 'Fredericton',
+              to: 'Grand Falls',
+              distance: '165 km',
+              time: '1.75-2 hrs',
+              note: 'Good lunch or gorge-walk break if the family needs movement.',
+            },
+            {
+              from: 'Grand Falls',
+              to: 'Riviere-du-Loup',
+              distance: '230 km',
+              time: '2.25-2.5 hrs',
+              note: 'Recommended overnight stop for the calmer 8-day version.',
+            },
+            {
+              from: 'Riviere-du-Loup',
+              to: 'Quebec City',
+              distance: '200 km',
+              time: '2 hrs',
+              note: 'Only add this if you are forcing the 7-day version and can handle the longer day.',
+            },
+          ],
+          driveSteps: [
+            'Take Hwy 1 E from Saint Andrews back to Fredericton via Trans-Canada (~2 hrs)',
+            'Continue on Trans-Canada Hwy 2 N through Grand Falls to Edmundston',
+            'Cross into Québec — take Hwy 185 N to Rivière-du-Loup (~2 hrs from Fredericton)',
+            'Option A: stop overnight in Rivière-du-Loup (recommended with family)',
+            'Option B: continue on A-20 W to Quebec City (~1 hr more) for early departure home',
+          ],
+          legWaypoints: [
+            [45.0768, -67.0568],
+            [45.9636, -66.6431],
+            [47.0594, -67.7404],
+            [47.8278, -69.5378],
+            [46.8139, -71.2080],
+          ],
+        },
+      ],
+    },
+
+    poi: [
+      {
+        name: 'Hopewell Rocks Provincial Park',
+        location: 'Hopewell Cape',
+        description:
+          'New Brunswick classic. Walk on the ocean floor between giant flowerpot rock formations at low tide, then watch the Bay of Fundy refill the same space hours later.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['tides', 'beach', 'geology', 'iconic'],
+        dogNote:
+          'Dogs are allowed on leash in many outdoor areas, but stairs, wet mud, and crowds can be tricky. Rinse paws after beach time and check current park rules before visiting.',
+      },
+      {
+        name: 'Fundy National Park',
+        location: 'Alma',
+        description:
+          'The best family outdoor base in New Brunswick: waterfalls, Acadian forest, coastal lookouts, red chairs, beaches, and the village of Alma beside the park gate.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['national park', 'waterfalls', 'forest', 'coast'],
+        dogNote:
+          'Leashed dogs are allowed on many trails and in campgrounds. Keep the dog out of sensitive beach and wildlife areas where posted.',
+      },
+      {
+        name: 'Montmorency Falls',
+        location: 'Quebec City area',
+        description:
+          'A dramatic waterfall just outside Quebec City and a perfect Day 2 leg-stretcher before following the St. Lawrence east.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['waterfall', 'viewpoint', 'short stop', 'family'],
+        dogNote:
+          'Outdoor viewing areas work well with a leashed dog. Keep the dog away from crowded stair sections if it is hot or busy.',
+      },
+      {
+        name: 'Pointe-au-Pere Lighthouse',
+        location: 'Rimouski',
+        description:
+          'Historic lighthouse and maritime site on the St. Lawrence. A relaxed Rimouski activity with space for the kids to wander and the dog to stretch.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['lighthouse', 'history', 'waterfront', 'sunset'],
+        dogNote:
+          'Keep the visit mostly outdoors with a leashed dog and use the waterfront for a gentle evening walk.',
+      },
+      {
+        name: 'Grand Falls Gorge',
+        location: 'Grand Falls',
+        description:
+          'A memorable New Brunswick break stop between Rimouski and Fredericton, with gorge views and enough movement to reset everyone after highway time.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['gorge', 'waterfall', 'drive break', 'viewpoint'],
+        dogNote:
+          'Use the viewing areas and paths as a leashed dog walk. Keep kids and dog close at railings.',
+      },
+      {
+        name: 'Cape Enrage',
+        location: 'Bay of Fundy',
+        description:
+          'A rugged lighthouse and cliffside stop near Fundy National Park. It pairs well with Hopewell Rocks when tide timing allows.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['lighthouse', 'cliffs', 'views', 'Fundy'],
+        dogNote:
+          'Leashed outdoor areas are the best fit. Wind, stairs, and cliffs mean the dog should stay close.',
+      },
+      {
+        name: 'St. Andrews by-the-Sea',
+        location: 'St. Andrews',
+        description:
+          'Historic seaside town with Water Street shops, a long waterfront, whale-watching departures, Kingsbrae Garden, and easy patio meals.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['seaside town', 'whales', 'shops', 'waterfront'],
+        dogNote:
+          'The town is very walkable with a dog. Whale tours and gardens may have restrictions, so plan a split-adult activity if needed.',
+      },
+      {
+        name: 'Ministers Island',
+        location: 'Near St. Andrews',
+        description:
+          'A tidal island reached by driving across the exposed ocean floor at low tide. The historic estate and views make it a memorable family stop.',
+        dogFriendly: true,
+        kidFriendly: true,
+        tags: ['tidal road', 'history', 'views', 'unique'],
+        dogNote:
+          'Dogs may be limited to outdoor areas. Tide timing is mandatory; do not start the crossing close to cutoff time.',
+      },
+      {
+        name: 'Kingsbrae Garden',
+        location: 'St. Andrews',
+        description:
+          'Beautiful garden stop in Saint Andrews with a calmer pace than big-city tourism. Excellent for kids who need open space after several travel days.',
+        dogFriendly: false,
+        kidFriendly: true,
+        tags: ['garden', 'family', 'slow pace', 'St. Andrews'],
+        dogNote:
+          'Treat this as a split-adult stop or confirm current pet rules before visiting.',
+      },
+    ],
+
+    trails: [
+      {
+        name: 'Dickson Falls Trail',
+        location: 'Fundy National Park',
+        lengthKm: 1.5,
+        difficulty: 'easy',
+        surface: 'Boardwalk and forest path',
+        dogFriendly: true,
+        kidFriendly: true,
+        duration: '30-45 min',
+        seniorDogNote: null,
+        samoyedNote:
+          'Shaded, short, and cool from the waterfall ravine. This is one of the best warm-weather dog choices in Fundy.',
+        description:
+          'A short loop through lush forest and mossy ravines to a pretty waterfall. Excellent first Fundy hike for kids.',
+      },
+      {
+        name: 'Laverty Falls Trail',
+        location: 'Fundy National Park',
+        lengthKm: 5.0,
+        difficulty: 'moderate',
+        surface: 'Forest trail with roots and rocks',
+        dogFriendly: true,
+        kidFriendly: true,
+        duration: '2-3 hrs',
+        seniorDogNote: null,
+        samoyedNote:
+          'Do this early and only if the dog is comfortable with a moderate forest hike. The waterfall pool area is a great cooldown spot.',
+        description:
+          'A popular forest hike to one of Fundy National Park\'s most loved waterfalls. Rewarding but more demanding than Dickson Falls.',
+      },
+      {
+        name: 'Matthews Head Trail',
+        location: 'Fundy National Park',
+        lengthKm: 4.5,
+        difficulty: 'easy-moderate',
+        surface: 'Forest and coastal path',
+        dogFriendly: true,
+        kidFriendly: true,
+        duration: '1.5-2 hrs',
+        seniorDogNote: 'Better for a steady dog than a tired one; shorten the day if needed.',
+        samoyedNote:
+          'Good mix of shade and coastal air. Start in the morning and carry extra water.',
+        description:
+          'Beginner/intermediate Fundy hike with forest, headland scenery, and Bay of Fundy views. A strong choice for the full Fundy recovery day.',
+      },
+      {
+        name: 'Caribou Plains Trail',
+        location: 'Fundy National Park',
+        lengthKm: 2.1,
+        difficulty: 'easy',
+        surface: 'Boardwalk and forest trail',
+        dogFriendly: true,
+        kidFriendly: true,
+        duration: '35-50 min',
+        seniorDogNote: 'Gentle, short, and useful as a lower-energy option.',
+        samoyedNote:
+          'A good lighter trail when the dog needs shade and a shorter outing.',
+        description:
+          'Easy boardwalk-and-forest route through bog habitat. A nice contrast to waterfalls and beaches without overloading the day.',
+      },
+      {
+        name: 'Ministers Island Perimeter Walk',
+        location: 'St. Andrews',
+        lengthKm: 3.0,
+        difficulty: 'easy',
+        surface: 'Gravel road and grass paths',
+        dogFriendly: true,
+        kidFriendly: true,
+        duration: '45-75 min',
+        seniorDogNote: 'Mostly gentle terrain, but tide timing controls the whole visit.',
+        samoyedNote:
+          'Open sections can be sunny. Time it for morning or evening low tide when possible.',
+        description:
+          'A relaxed walk around one of New Brunswick\'s most unusual tide-access sites, with estate grounds and Passamaquoddy Bay views.',
+      },
+    ],
+
+    restaurants: [
+      {
+        name: 'Chez Ashton',
+        location: 'Quebec City',
+        cuisine: 'Poutine / Casual',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$',
+        mustTry: 'Classic Quebec poutine',
+        tip: 'Easy first-night comfort food. Use takeout if patio seating is not convenient with the dog.',
+      },
+      {
+        name: 'Paillard Bakery',
+        location: 'Quebec City',
+        cuisine: 'Bakery / Cafe',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$',
+        mustTry: 'Croissants, pastries, sandwiches',
+        tip: 'Excellent breakfast or road-snack stop before heading toward Rimouski.',
+      },
+      {
+        name: 'Chocolats Favoris',
+        location: 'Quebec City',
+        cuisine: 'Chocolate / Ice cream',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$',
+        mustTry: 'Dipped ice cream cones',
+        tip: 'Kid morale stop. Keep it as an outdoor treat with the dog.',
+      },
+      {
+        name: 'Fredericton Patio Pub Stop',
+        location: 'Fredericton',
+        cuisine: 'Pub / Brewery',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$$',
+        mustTry: 'Burgers, fish and chips, local beer list',
+        tip: 'Use Fredericton as the decompression night: riverfront walk, then a brewery or pub patio that allows dogs.',
+      },
+      {
+        name: 'Tipsy Tails Restaurant',
+        location: 'Alma',
+        cuisine: 'Seafood / Casual',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$$',
+        mustTry: 'Lobster roll, chowder, fried clams',
+        tip: 'A natural Fundy National Park meal stop. Ask for outdoor seating if travelling with the dog.',
+      },
+      {
+        name: 'Alma Lobster Shop',
+        location: 'Alma',
+        cuisine: 'Seafood / Takeout',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$$',
+        mustTry: 'Lobster, seafood plates, picnic-style meals',
+        tip: 'Ideal after a Fundy trail day. Take food to a waterfront picnic spot if patio space is tight.',
+      },
+      {
+        name: 'Sapranos Pizza',
+        location: 'Alma',
+        cuisine: 'Pizza / Casual',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$',
+        mustTry: 'Pizza after a long beach or waterfall day',
+        tip: 'Low-friction kid dinner for the second Alma night.',
+      },
+      {
+        name: 'Honeybeans Coffee',
+        location: 'St. Andrews',
+        cuisine: 'Coffee / Breakfast',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$',
+        mustTry: 'Coffee, baked goods, breakfast bites',
+        tip: 'Good morning stop before waterfront wandering or Ministers Island tide timing.',
+      },
+      {
+        name: 'The Clam Digger',
+        location: 'St. Andrews',
+        cuisine: 'Seafood',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$$',
+        mustTry: 'Clams, chowder, fried seafood',
+        tip: 'Classic seaside food stop. Confirm patio seating if the dog is joining.',
+      },
+      {
+        name: "Braxton's",
+        location: 'St. Andrews',
+        cuisine: 'Canadian / Hotel dining',
+        dogFriendly: true,
+        kidFriendly: true,
+        priceRange: '$$$',
+        mustTry: 'Seafood, brunch, family-friendly mains',
+        tip: 'Convenient if staying near the Algonquin. Patio rules can change, so call ahead for the dog.',
+      },
+    ],
+
+    lodging: [
+      {
+        name: 'Hotel Cofortel',
+        type: 'Hotel',
+        location: 'Quebec City / airport area (Night 1)',
+        petPolicy: 'Pet-friendly rooms may be available; confirm fee and room type',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Standard family rooms',
+        bookingNote: 'Practical first-night choice with easier parking than deep Old Quebec.',
+      },
+      {
+        name: 'Hotel Le Voyageur',
+        type: 'Hotel',
+        location: 'Quebec City outskirts (Night 1)',
+        petPolicy: 'Pet-friendly rooms may be available; confirm directly',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Simple family rooms',
+        bookingNote: 'Good fit when you want value, parking, and quick access back to the highway.',
+      },
+      {
+        name: 'Hotel Champlain',
+        type: 'Boutique Hotel',
+        location: 'Old Quebec (Night 1)',
+        petPolicy: 'Confirm current pet policy before booking',
+        familySuitable: true,
+        priceRange: '$$$',
+        rooms: 'Central rooms near Old Quebec sights',
+        bookingNote: 'Better for atmosphere than parking. Use only if Old Quebec access matters more than car convenience.',
+      },
+      {
+        name: 'Rimouski Waterfront Motel or Cottage',
+        type: 'Motel / Cottage',
+        location: 'Rimouski (Night 2)',
+        petPolicy: 'Filter specifically for pet-friendly waterfront units',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Motel rooms, cottages, or small suites',
+        bookingNote: 'Aim for water access so the evening can be a simple sunset walk instead of another activity drive.',
+      },
+      {
+        name: 'Hilton Garden Inn Fredericton',
+        type: 'Hotel',
+        location: 'Fredericton (Night 3)',
+        petPolicy: 'Pet-friendly with fee; verify current policy',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Downtown rooms and larger configurations',
+        bookingNote: 'Good central base for the riverfront trail and downtown restaurants.',
+      },
+      {
+        name: 'Parkland Village Inn',
+        type: 'Inn',
+        location: 'Alma / Fundy (Nights 4-5)',
+        petPolicy: 'Ask for pet-friendly rooms before booking',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Inn rooms close to Alma village',
+        bookingNote: 'Strong base for the 2-night Fundy stay. The point is fewer hotel changes and easy access to the park.',
+      },
+      {
+        name: 'Alpine Motor Inn',
+        type: 'Motel',
+        location: 'Alma / Fundy (Nights 4-5)',
+        petPolicy: 'Pet-friendly rooms may be available; confirm directly',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Simple motel rooms near Fundy National Park',
+        bookingNote: 'No-fuss Alma base when you want to spend time outside instead of in the room.',
+      },
+      {
+        name: 'Vista Ridge Cottages',
+        type: 'Cottage',
+        location: 'Alma / Fundy (Nights 4-5)',
+        petPolicy: 'Confirm pet-friendly cottage availability',
+        familySuitable: true,
+        priceRange: '$$$',
+        rooms: 'Private cottages with more family space',
+        bookingNote: 'Best style of stay for kids plus dog if availability and budget work.',
+      },
+      {
+        name: 'Fundy Highlands',
+        type: 'Motel / Chalet',
+        location: 'Alma / Fundy (Nights 4-5)',
+        petPolicy: 'Select pet-friendly units; confirm before booking',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Motel rooms and chalets',
+        bookingNote: 'Useful location at the edge of Fundy National Park. Book early for summer.',
+      },
+      {
+        name: 'The Algonquin Resort',
+        type: 'Resort Hotel',
+        location: 'St. Andrews (Night 6)',
+        petPolicy: 'Pet-friendly rooms available; reserve specifically',
+        familySuitable: true,
+        priceRange: '$$$$',
+        rooms: 'Historic resort rooms and suites',
+        bookingNote: 'Signature St. Andrews stay. Great splurge night if pet-friendly inventory is available.',
+      },
+      {
+        name: 'Kennedy House',
+        type: 'Inn',
+        location: 'St. Andrews (Night 6)',
+        petPolicy: 'Confirm pet-friendly rooms before booking',
+        familySuitable: true,
+        priceRange: '$$$',
+        rooms: 'Inn rooms close to town',
+        bookingNote: 'Good town-based option for waterfront walks and easy food stops.',
+      },
+      {
+        name: 'Picket Fence Motel',
+        type: 'Motel',
+        location: 'St. Andrews (Night 6)',
+        petPolicy: 'Confirm current pet policy before booking',
+        familySuitable: true,
+        priceRange: '$$',
+        rooms: 'Motel rooms near town',
+        bookingNote: 'Practical, lower-key Saint Andrews base for a family plus dog.',
+      },
+    ],
+
+    seasonTips: {
+      june:
+        'June brings cooler coastal hiking weather and fewer crowds. Pack rain layers and expect some muddy trail sections in Fundy. Whale watching is starting but not at peak.',
+      'late-august':
+        'Late August has the warmest water, full services, and strong whale-watching odds near St. Andrews. It is also the toughest heat window for the dog, so keep hikes early and book lodging well ahead.',
+      'early-september':
+        'Early September is the sweet spot: cooler hiking, fewer families after Labour Day, good coastal weather, and excellent conditions for the dog. This is the recommended season for the 7-day New Brunswick loop.',
+    },
+  },
 ];
+
+const ACTIVE_TRIP_IDS = new Set(['eastern-circuit', 'new-brunswick-fundy']);
+
+function getSegmentAttractions(tripId, day, segment) {
+  return OPENTRIPMAP_SEGMENT_ATTRACTIONS[tripId]?.[`${day}|${segment.from}|${segment.to}`] || [];
+}
+
+function inferAttractionSuitability(attraction) {
+  const text = `${attraction.category || ''} ${attraction.kinds || ''}`.toLowerCase();
+  const dogFriendlyLikely = [
+    'natural',
+    'parks',
+    'gardens',
+    'beaches',
+    'view_points',
+    'historic',
+    'architecture',
+    'urban_environment',
+    'tourist_facilities',
+  ].some(kind => text.includes(kind));
+  const kidFriendlyLikely = [
+    'amusements',
+    'museums',
+    'natural',
+    'parks',
+    'gardens',
+    'beaches',
+    'historic',
+    'architecture',
+    'cultural',
+    'tourist_facilities',
+    'theatres',
+    'cinemas',
+  ].some(kind => text.includes(kind));
+
+  return { dogFriendlyLikely, kidFriendlyLikely };
+}
+
+function buildSegmentPoi(trip, day, segment, attraction) {
+  const suitability = inferAttractionSuitability(attraction);
+  return {
+    name: attraction.name,
+    location: `${segment.from} to ${segment.to}`,
+    address: attraction.address,
+    description: `${attraction.description} Segment: ${segment.from} to ${segment.to}.`,
+    dogFriendly: suitability.dogFriendlyLikely,
+    kidFriendly: suitability.kidFriendlyLikely,
+    dogFriendlyLikely: suitability.dogFriendlyLikely,
+    kidFriendlyLikely: suitability.kidFriendlyLikely,
+    day,
+    tags: ['OpenTripMap', attraction.category, 'segment stop'].filter(Boolean),
+    dogNote: suitability.dogFriendlyLikely
+      ? 'Likely dog-friendly based on OpenTripMap category. Verify current access, leash rules, and seasonal hours before visiting.'
+      : 'Dog access is unclear from OpenTripMap data. Verify directly before visiting with the dog.',
+    googleMapsUrl: attraction.url,
+    source: 'OpenTripMap',
+    sourceId: attraction.xid,
+  };
+}
+
+function buildSegmentMapPoint(day, segment, attraction) {
+  const suitability = inferAttractionSuitability(attraction);
+  return {
+    category: 'poi',
+    day,
+    name: attraction.name,
+    location: `${segment.from} to ${segment.to}`,
+    coords: attraction.coords,
+    note: `${attraction.category} from OpenTripMap, ${attraction.location}.`,
+    dogFriendlyLikely: suitability.dogFriendlyLikely,
+    kidFriendlyLikely: suitability.kidFriendlyLikely,
+    sourceId: attraction.xid,
+  };
+}
+
+function withOpenTripMapAttractions(trip) {
+  const segmentPois = [];
+  const segmentMapPoints = [];
+  const route = {
+    ...trip.route,
+    itinerary: trip.route.itinerary.map(day => ({
+      ...day,
+      driveSegments: (day.driveSegments || []).map(segment => {
+        const attractions = getSegmentAttractions(trip.id, day.day, segment);
+        attractions.forEach(attraction => {
+          segmentPois.push(buildSegmentPoi(trip, day.day, segment, attraction));
+          segmentMapPoints.push(buildSegmentMapPoint(day.day, segment, attraction));
+        });
+        return attractions.length > 0
+          ? { ...segment, attractions: attractions.map(attraction => ({ ...attraction, ...inferAttractionSuitability(attraction) })) }
+          : segment;
+      }),
+    })),
+  };
+
+  return {
+    ...trip,
+    route: {
+      ...route,
+      mapPoints: [...(route.mapPoints || []), ...segmentMapPoints],
+    },
+    poi: [...(trip.poi || []), ...segmentPois],
+  };
+}
+
+export const TRIPS = ALL_TRIPS
+  .filter(trip => ACTIVE_TRIP_IDS.has(trip.id))
+  .map(withOpenTripMapAttractions);

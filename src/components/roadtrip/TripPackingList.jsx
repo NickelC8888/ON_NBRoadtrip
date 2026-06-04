@@ -114,8 +114,6 @@ const CATEGORIES = [
 
 export default function TripPackingList() {
   const totalItems = CATEGORIES.reduce((n, c) => n + c.items.length, 0);
-
-  // checked state: Set of "categoryId::item" strings
   const [checked, setChecked] = useState(new Set());
 
   function toggle(key) {
@@ -126,9 +124,7 @@ export default function TripPackingList() {
     });
   }
 
-  function reset() {
-    setChecked(new Set());
-  }
+  function reset() { setChecked(new Set()); }
 
   const checkedCount = checked.size;
   const pct = Math.round((checkedCount / totalItems) * 100);
@@ -136,41 +132,36 @@ export default function TripPackingList() {
   return (
     <div className="space-y-4">
       {/* Header bar */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-slate-500">
-            {checkedCount} of {totalItems} items packed
+      <div className="flex items-center justify-between bg-cream-100 border border-sun-100 rounded-xl px-4 py-3">
+        <div className="space-y-1.5">
+          <p className="text-sm text-bark-600">
+            <span className="font-bold text-bark-800">{checkedCount}</span>
+            <span className="text-bark-400"> of {totalItems} items packed</span>
           </p>
-          <div className="h-2 w-48 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-2 w-48 bg-cream-300 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
-              style={{ width: `${pct}%` }}
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${pct}%`, background: 'linear-gradient(to right, #f59e0b, #fbbf24)' }}
             />
           </div>
         </div>
         {checkedCount > 0 && (
           <button
             onClick={reset}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-bark-400 hover:text-sun-600 transition-colors font-medium"
           >
             <RotateCcw className="w-3.5 h-3.5" /> Reset
           </button>
         )}
       </div>
 
-      {/* Categories */}
       {CATEGORIES.map(cat => (
-        <CategorySection
-          key={cat.id}
-          category={cat}
-          checked={checked}
-          onToggle={toggle}
-        />
+        <CategorySection key={cat.id} category={cat} checked={checked} onToggle={toggle} />
       ))}
 
       {pct === 100 && (
-        <div className="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium text-sm">
-          ✅ All packed — have an amazing trip!
+        <div className="text-center py-5 bg-leaf-50 border-2 border-leaf-200 rounded-2xl text-leaf-700 font-semibold text-sm">
+          🎒 All packed — have an amazing trip!
         </div>
       )}
     </div>
@@ -183,24 +174,26 @@ function CategorySection({ category, checked, onToggle }) {
   const allDone = catChecked === category.items.length;
 
   return (
-    <div className={`border rounded-lg overflow-hidden transition-colors ${allDone ? 'border-emerald-200' : 'border-slate-200'}`}>
+    <div className={`border rounded-xl overflow-hidden transition-colors shadow-card ${allDone ? 'border-leaf-300' : 'border-stone-200'}`}>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${allDone ? 'bg-emerald-50 hover:bg-emerald-100' : 'bg-slate-50 hover:bg-slate-100'}`}
+        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${allDone ? 'bg-leaf-50 hover:bg-leaf-100' : 'bg-cream-100 hover:bg-cream-200'}`}
       >
         <div className="flex items-center gap-3">
-          <span className="font-medium text-slate-800 text-sm">{category.label}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${allDone ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+          <span className={`font-semibold text-sm ${allDone ? 'text-leaf-700' : 'text-bark-800'}`}>
+            {category.label}
+          </span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold border ${allDone ? 'bg-leaf-100 text-leaf-700 border-leaf-300' : 'bg-cream-200 text-bark-500 border-cream-300'}`}>
             {catChecked}/{category.items.length}
           </span>
         </div>
         {open
-          ? <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />}
+          ? <ChevronUp className="w-4 h-4 text-bark-400 flex-shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-bark-400 flex-shrink-0" />}
       </button>
 
       {open && (
-        <ul className="divide-y divide-slate-100 bg-white">
+        <ul className="divide-y divide-stone-100 bg-white">
           {category.items.map(item => {
             const key = `${category.id}::${item}`;
             const isChecked = checked.has(key);
@@ -208,12 +201,12 @@ function CategorySection({ category, checked, onToggle }) {
               <li key={item}>
                 <button
                   onClick={() => onToggle(key)}
-                  className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-cream-100 transition-colors"
                 >
                   {isChecked
-                    ? <CheckSquare className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    : <Square className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />}
-                  <span className={`text-sm leading-snug ${isChecked ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+                    ? <CheckSquare className="w-4 h-4 text-leaf-500 flex-shrink-0 mt-0.5" />
+                    : <Square className="w-4 h-4 text-stone-300 flex-shrink-0 mt-0.5" />}
+                  <span className={`text-sm leading-snug ${isChecked ? 'line-through text-bark-300' : 'text-bark-700'}`}>
                     {item}
                   </span>
                 </button>
