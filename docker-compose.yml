@@ -1,0 +1,32 @@
+services:
+  trip-planner:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - trip_data:/app/data          # persists the SQLite database
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}      # set in .env alongside this file
+      DB_PATH: /app/data/trips.db
+    networks:
+      - traefik_network              # ← replace with your actual Traefik network name
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trip-planner.rule=Host(`trip.nicholaschan.ca`)"
+      - "traefik.http.routers.trip-planner.entrypoints=websecure"
+      - "traefik.http.routers.trip-planner.tls.certresolver=letsencrypt"  # ← replace with your certresolver name
+      - "traefik.http.services.trip-planner.loadbalancer.server.port=3001"
+      # Redirect HTTP → HTTPS
+      - "traefik.http.routers.trip-planner-http.rule=Host(`trip.nicholaschan.ca`)"
+      - "traefik.http.routers.trip-planner-http.entrypoints=web"
+      - "traefik.http.routers.trip-planner-http.middlewares=trip-https-redirect"
+      - "traefik.http.middlewares.trip-https-redirect.redirectscheme.scheme=https"
+
+volumes:
+  trip_data:
+
+networks:
+  traefik_network:
+    external: true
+    name: traefik_network             # ← replace with your actual Traefik network name

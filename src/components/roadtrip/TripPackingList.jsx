@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, CheckSquare, Square, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckSquare, Square, RotateCcw, Trash2, Plus } from 'lucide-react';
 
 const CATEGORIES = [
   {
@@ -112,8 +112,18 @@ const CATEGORIES = [
   },
 ];
 
-export default function TripPackingList() {
-  const totalItems = CATEGORIES.reduce((n, c) => n + c.items.length, 0);
+export default function TripPackingList({ editMode, packingOverrides, onAdd, onDelete }) {
+  // Merge base categories with user overrides
+  const categories = CATEGORIES.map(cat => {
+    const added   = packingOverrides?.added?.[cat.id]   || [];
+    const deleted = packingOverrides?.deleted?.[cat.id] || [];
+    return {
+      ...cat,
+      items: [...cat.items.filter(i => !deleted.includes(i)), ...added],
+    };
+  });
+
+  const totalItems = categories.reduce((n, c) => n + c.items.length, 0);
   const [checked, setChecked] = useState(new Set());
 
   function toggle(key) {
@@ -155,8 +165,16 @@ export default function TripPackingList() {
         )}
       </div>
 
-      {CATEGORIES.map(cat => (
-        <CategorySection key={cat.id} category={cat} checked={checked} onToggle={toggle} />
+      {categories.map(cat => (
+        <CategorySection
+          key={cat.id}
+          category={cat}
+          checked={checked}
+          onToggle={toggle}
+          editMode={editMode}
+          onAdd={onAdd}
+          onDelete={onDelete}
+        />
       ))}
 
       {pct === 100 && (
@@ -168,16 +186,25 @@ export default function TripPackingList() {
   );
 }
 
-function CategorySection({ category, checked, onToggle }) {
+function CategorySection({ category, checked, onToggle, editMode, onAdd, onDelete }) {
   const [open, setOpen] = useState(false);
+  const [newItem, setNewItem] = useState('');
   const catChecked = category.items.filter(item => checked.has(`${category.id}::${item}`)).length;
-  const allDone = catChecked === category.items.length;
+  const allDone = catChecked === category.items.length && category.items.length > 0;
+
+  function submitAdd(e) {
+    e.preventDefault();
+    const text = newItem.trim();
+    if (!text) return;
+    onAdd?.(category.id, text);
+    setNewItem('');
+  }
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-colors shadow-card ${allDone ? 'border-leaf-300' : 'border-stone-200'}`}>
+    <div className={`border rounded-xl overflow-hidden transition-colors shadow-card ${allDone ? 'border-leaf-300' : editMode ? 'border-sun-200' : 'border-stone-200'}`}>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${allDone ? 'bg-leaf-50 hover:bg-leaf-100' : 'bg-cream-100 hover:bg-cream-200'}`}
+        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${allDone ? 'bg-leaf-50 hover:bg-leaf-100' : editMode ? 'bg-sun-50 hover:bg-sun-100' : 'bg-cream-100 hover:bg-cream-200'}`}
       >
         <div className="flex items-center gap-3">
           <span className={`font-semibold text-sm ${allDone ? 'text-leaf-700' : 'text-bark-800'}`}>
@@ -193,27 +220,52 @@ function CategorySection({ category, checked, onToggle }) {
       </button>
 
       {open && (
-        <ul className="divide-y divide-stone-100 bg-white">
-          {category.items.map(item => {
-            const key = `${category.id}::${item}`;
-            const isChecked = checked.has(key);
-            return (
-              <li key={item}>
-                <button
-                  onClick={() => onToggle(key)}
-                  className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-cream-100 transition-colors"
-                >
-                  {isChecked
-                    ? <CheckSquare className="w-4 h-4 text-leaf-500 flex-shrink-0 mt-0.5" />
-                    : <Square className="w-4 h-4 text-stone-300 flex-shrink-0 mt-0.5" />}
-                  <span className={`text-sm leading-snug ${isChecked ? 'line-through text-bark-300' : 'text-bark-700'}`}>
-                    {item}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="bg-white">
+          <ul className="divide-y divide-stone-100">
+            {category.items.map(item => {
+              const key = `${category.id}::${item}`;
+              const isChecked = checked.has(key);
+              return (
+                <li key={item} className="flex items-center">
+                  <button
+                    onClick={() => onToggle(key)}
+                    className="flex-1 flex items-start gap-3 px-4 py-2.5 text-left hover:bg-cream-100 transition-colors"
+                  >
+                    {isChecked
+                      ? <CheckSquare className="w-4 h-4 text-leaf-500 flex-shrink-0 mt-0.5" />
+                      : <Square className="w-4 h-4 text-stone-300 flex-shrink-0 mt-0.5" />}
+                    <span className={`text-sm leading-snug ${isChecked ? 'line-through text-bark-300' : 'text-bark-700'}`}>
+                      {item}
+                    </span>
+                  </button>
+                  {editMode && (
+                    <button
+                      onClick={() => onDelete?.(category.id, item)}
+                      className="w-8 h-8 mr-2 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-300 hover:text-red-500 transition-colors flex-shrink-0"
+                      title="Remove item"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          {editMode && (
+            <form onSubmit={submitAdd} className="flex gap-2 px-4 py-3 border-t border-stone-100 bg-sun-50">
+              <input
+                value={newItem}
+                onChange={e => setNewItem(e.target.value)}
+                placeholder="Add item…"
+                className="flex-1 rounded-xl border border-sun-300 px-3 py-1.5 text-sm text-bark-800 focus:outline-none focus:ring-2 focus:ring-sun-400 bg-white"
+              />
+              <button type="submit"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-sun-500 hover:bg-sun-600 text-bark-950 text-xs font-bold transition-colors">
+                <Plus className="w-3.5 h-3.5" /> Add
+              </button>
+            </form>
+          )}
+        </div>
       )}
     </div>
   );

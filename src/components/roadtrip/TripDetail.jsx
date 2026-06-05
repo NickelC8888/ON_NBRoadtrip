@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import {
   MapPin, Clock, Calendar, Dog, Users, Car, ExternalLink,
-  Star, Utensils, BedDouble, TreePine, XCircle, Phone,
+  Star, Utensils, BedDouble, TreePine, XCircle, Phone, Camera,
   ChevronDown, ChevronUp, Footprints, Sun, Printer, ShoppingBag, Mail,
+  Pencil, Trash2, Plus, Eye, EyeOff,
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CONTACT_OVERRIDES } from '@/data/contactOverrides';
 import TripRouteMap from './TripRouteMap';
 import TripPackingList from './TripPackingList';
+import PlaceLightbox from './PlaceLightbox';
 import CityAttractionsSection from './CityAttractionsSection';
+import EditItemModal from './EditItemModal';
 
 // ── badges ───────────────────────────────────────────────────────────────────
 
@@ -142,10 +145,182 @@ function ContactDetails({ item, showLocation = true }) {
   );
 }
 
+// ── day resource helpers ──────────────────────────────────────────────────────
+
+function normForMatch(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function findMapPoint(item, legMapPoints) {
+  if (!legMapPoints?.length) return null;
+  const itemN = normForMatch(item.name);
+  // Exact
+  let mp = legMapPoints.find(p => normForMatch(p.name) === itemN);
+  if (mp) return mp;
+  // One name contains the other
+  mp = legMapPoints.find(p => {
+    const pN = normForMatch(p.name);
+    return pN.includes(itemN) || itemN.includes(pN);
+  });
+  if (mp) return mp;
+  // ≥2 significant words overlap
+  const iWords = new Set(itemN.split(' ').filter(w => w.length > 3));
+  if (iWords.size >= 2) {
+    mp = legMapPoints.find(p => {
+      const pWords = normForMatch(p.name).split(' ').filter(w => w.length > 3);
+      return pWords.filter(w => iWords.has(w)).length >= 2;
+    });
+  }
+  return mp || null;
+}
+
+const RESOURCE_SECTIONS = [
+  { key: 'poi',         label: 'Points of Interest', Icon: MapPin,    accent: 'text-lake-600'   },
+  { key: 'trails',      label: 'Trails',              Icon: Footprints, accent: 'text-leaf-600'  },
+  { key: 'restaurants', label: 'Restaurants',         Icon: Utensils,  accent: 'text-sun-600'    },
+  { key: 'lodging',     label: 'Lodging',             Icon: BedDouble, accent: 'text-purple-600' },
+];
+
+function itemInfoUrl(item) {
+  if (item.website) return item.website;
+  const q = encodeURIComponent(`${item.name}${item.location ? ' ' + item.location : ''}`);
+  return `https://en.wikipedia.org/w/index.php?search=${q}`;
+}
+
+function ResourceItem({ item, legMapPoints, selectedCoords, onSelectCoords, onPhotos }) {
+  const mp = findMapPoint(item, legMapPoints);
+  const isActive = mp && selectedCoords &&
+    Math.abs(mp.coords[0] - selectedCoords[0]) < 0.0001 &&
+    Math.abs(mp.coords[1] - selectedCoords[1]) < 0.0001;
+
+  return (
+    <div
+      onClick={mp ? () => onSelectCoords(isActive ? null : mp.coords) : undefined}
+      className={`px-3 py-3 transition-all duration-150 ${mp ? 'cursor-pointer' : ''} ${
+        isActive ? 'bg-sun-50' : mp ? 'hover:bg-cream-50' : ''
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-bark-800 text-sm leading-snug">{item.name}</p>
+          {(item.location || item.address) && (
+            <p className="text-xs text-bark-400 mt-0.5 truncate">{item.location || item.address}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0 mt-0.5">
+          {item.dogFriendly && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] bg-leaf-100 text-leaf-700 border border-leaf-200 px-1.5 py-0.5 rounded-full font-medium">
+              <Dog className="w-2.5 h-2.5" /> Dog OK
+            </span>
+          )}
+          {item.kidFriendly && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-full font-medium">
+              <Users className="w-2.5 h-2.5" /> Kids
+            </span>
+          )}
+        </div>
+      </div>
+
+      {item.description && (
+        <p className="text-xs text-bark-500 mt-1.5 leading-relaxed line-clamp-2">{item.description}</p>
+      )}
+      {item.dogNote && (
+        <p className="text-[11px] text-leaf-700 mt-1 leading-snug italic">{item.dogNote}</p>
+      )}
+      {item.mustTry && (
+        <p className="text-[11px] text-sun-700 mt-1 leading-snug">
+          <Star className="w-2.5 h-2.5 inline mr-0.5 mb-0.5" />
+          {item.mustTry}
+        </p>
+      )}
+      {item.petPolicy && (
+        <p className="text-[11px] text-leaf-700 mt-1 leading-snug">
+          <Dog className="w-2.5 h-2.5 inline mr-0.5 mb-0.5" />
+          {item.petPolicy}
+        </p>
+      )}
+
+      <div className="flex items-center gap-3 mt-2" onClick={e => e.stopPropagation()}>
+        {mp && (
+          <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${isActive ? 'text-sun-600' : 'text-bark-400'}`}>
+            <MapPin className="w-3 h-3" />
+            {isActive ? 'On map ✓' : 'Click to pin'}
+          </span>
+        )}
+        <button
+          onClick={() => onPhotos && onPhotos(item)}
+          className="inline-flex items-center gap-1 text-[11px] text-lake-600 hover:text-lake-800 font-semibold transition-colors ml-auto"
+          title="View photos & details"
+        >
+          <Camera className="w-3 h-3" /> Photos
+        </button>
+        <a
+          href={item.googleMapsUrl || makeGoogleMapsSearchLink(item)}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="inline-flex items-center gap-1 text-[11px] text-sun-700 hover:text-sun-800 font-semibold"
+        >
+          <MapPin className="w-3 h-3" /> Maps
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function DayResourceList({ resources, legMapPoints, selectedCoords, onSelectCoords }) {
+  const [lightboxItem, setLightboxItem] = useState(null);
+
+  const sections = RESOURCE_SECTIONS
+    .map(s => ({ ...s, items: resources?.[s.key] || [] }))
+    .filter(s => s.items.length > 0);
+  if (sections.length === 0) return null;
+
+  const shortLabel = { 'Points of Interest': 'POI', Trails: 'Trails', Restaurants: 'Eat', Lodging: 'Stay' };
+
+  return (
+    <div className="border-t border-stone-100 bg-white px-4 pb-4 pt-3">
+      <Tabs defaultValue={sections[0].key}>
+        <TabsList
+          className="grid w-full"
+          style={{ gridTemplateColumns: `repeat(${sections.length}, 1fr)` }}
+        >
+          {sections.map(({ key, label, Icon }) => (
+            <TabsTrigger key={key} value={key} className="flex items-center gap-1.5 text-xs">
+              <Icon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{label}</span>
+              <span className="sm:hidden">{shortLabel[label] ?? label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {sections.map(({ key, items }) => (
+          <TabsContent key={key} value={key} className="mt-3">
+            <div className="divide-y divide-stone-100 border border-stone-200 rounded-xl overflow-hidden">
+              {items.map(item => (
+                <ResourceItem
+                  key={item.name}
+                  item={item}
+                  legMapPoints={legMapPoints}
+                  selectedCoords={selectedCoords}
+                  onSelectCoords={onSelectCoords}
+                  onPhotos={setLightboxItem}
+                />
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+      {lightboxItem && <PlaceLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
+    </div>
+  );
+}
+
 // ── sub-section cards ─────────────────────────────────────────────────────────
 
-function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo }) {
+function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayResources }) {
   const [open, setOpen] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState(null);
+  const [showAllLabels, setShowAllLabels] = useState(false);
+
   const attractionMatchesFilter = attraction => {
     if (attractionFilter === 'kids') return attraction.kidFriendlyLikely || attraction.kidFriendly;
     if (attractionFilter === 'dogs') return attraction.dogFriendlyLikely || attraction.dogFriendly;
@@ -163,6 +338,8 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo }) {
       mapPoints: legMapPoints || [],
     },
   } : null;
+
+  const hasResources = dayResources && RESOURCE_SECTIONS.some(s => (dayResources[s.key] || []).length > 0);
 
   return (
     <div className="border border-stone-200 rounded-xl overflow-hidden">
@@ -182,6 +359,7 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo }) {
       </button>
       {open && (
         <div className="border-t border-stone-100 bg-white">
+          {/* Drive info + map row */}
           <div className={`${hasMap ? 'grid lg:grid-cols-2 gap-0' : ''}`}>
             {/* Left: description + driving directions */}
             <div className="px-4 py-4 text-sm text-bark-600 leading-relaxed space-y-4">
@@ -251,38 +429,80 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo }) {
             {/* Right: leg map */}
             {hasMap && (
               <div className="h-[300px] lg:h-auto lg:min-h-[280px] border-t lg:border-t-0 lg:border-l border-stone-100 overflow-hidden">
-                <TripRouteMap trip={legTrip} height="100%" />
+                <TripRouteMap
+                  trip={legTrip}
+                  height="100%"
+                  selectedCoords={selectedCoords}
+                  showAllLabels={showAllLabels}
+                />
               </div>
             )}
           </div>
-          {onMoreInfo && (
-            <div className="px-4 py-3 border-t border-stone-100 flex justify-end">
+
+          {/* Day resources — POI, trails, restaurants, lodging */}
+          {hasResources && (
+            <DayResourceList
+              resources={dayResources}
+              legMapPoints={legMapPoints}
+              selectedCoords={selectedCoords}
+              onSelectCoords={setSelectedCoords}
+            />
+          )}
+
+          {/* Footer */}
+          <div className="px-4 py-3 border-t border-stone-100 flex items-center justify-between gap-2 flex-wrap">
+            {hasMap && (
+              <button
+                onClick={() => { setShowAllLabels(v => !v); setSelectedCoords(null); }}
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition-colors ${
+                  showAllLabels
+                    ? 'bg-sun-100 border-sun-300 text-sun-800'
+                    : 'bg-white border-stone-200 text-bark-500 hover:border-sun-200 hover:text-bark-700'
+                }`}
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                {showAllLabels ? 'Hide map labels' : 'Show all on map'}
+              </button>
+            )}
+            {onMoreInfo && (
               <button
                 onClick={() => onMoreInfo(day.day)}
-                className="inline-flex items-center gap-2 bg-sun-500 hover:bg-sun-600 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 bg-sun-500 hover:bg-sun-600 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm ml-auto"
               >
-                More Info →
+                Day Details →
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-export function POICard({ poi }) {
+export function POICard({ poi, onPhotos, editMode, onEdit, onDelete }) {
   const contactPoi = withContactOverride(poi, 'poi');
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
+    <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h4 className="font-semibold text-bark-800 text-sm">{poi.name}</h4>
           <ContactDetails item={contactPoi} />
         </div>
-        <div className="flex flex-col gap-1 flex-shrink-0">
-          <DogBadge friendly={poi.dogFriendly} />
-          <KidBadge friendly={poi.kidFriendly} />
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {editMode && (
+            <>
+              <button onClick={() => onEdit && onEdit(poi)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sun-100 text-bark-400 hover:text-sun-700 transition-colors" title="Edit">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDelete && onDelete(poi.name)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-400 hover:text-red-600 transition-colors" title="Delete">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          <div className="flex flex-col gap-1 ml-1">
+            <DogBadge friendly={poi.dogFriendly} />
+            <KidBadge friendly={poi.kidFriendly} />
+          </div>
         </div>
       </div>
       <p className="text-sm text-bark-600 leading-relaxed">{poi.description}</p>
@@ -299,30 +519,43 @@ export function POICard({ poi }) {
           ))}
         </div>
       )}
-      <a
-        href={contactPoi.googleMapsUrl || makeGoogleMapsSearchLink(contactPoi)}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold"
-      >
-        <ExternalLink className="w-3.5 h-3.5" />
-        View on Google Maps
-      </a>
+      <div className="flex items-center gap-3">
+        <button onClick={() => onPhotos && onPhotos(poi)}
+          className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
+          <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
+        </button>
+        <a href={contactPoi.googleMapsUrl || makeGoogleMapsSearchLink(contactPoi)} target="_blank" rel="noreferrer noopener"
+          className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
+          <ExternalLink className="w-3.5 h-3.5" /> Google Maps
+        </a>
+      </div>
     </div>
   );
 }
 
-export function TrailCard({ trail }) {
+export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete }) {
   const note = trail.samoyedNote || trail.seniorDogNote;
   const contactTrail = withContactOverride(trail, 'trails');
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
+    <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h4 className="font-semibold text-bark-800 text-sm">{trail.name}</h4>
           <ContactDetails item={contactTrail} />
         </div>
-        <DifficultyBadge difficulty={trail.difficulty} />
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {editMode && (
+            <>
+              <button onClick={() => onEdit && onEdit(trail)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sun-100 text-bark-400 hover:text-sun-700 transition-colors" title="Edit">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDelete && onDelete(trail.name)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-400 hover:text-red-600 transition-colors" title="Delete">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          <DifficultyBadge difficulty={trail.difficulty} />
+        </div>
       </div>
       <p className="text-sm text-bark-600 leading-relaxed">{trail.description}</p>
       <div className="grid grid-cols-3 gap-2 text-xs text-center">
@@ -349,32 +582,45 @@ export function TrailCard({ trail }) {
         {trail.dogFriendly && <DogBadge friendly={true} />}
         {trail.kidFriendly && <KidBadge friendly={true} />}
       </div>
-      <a
-        href={contactTrail.googleMapsUrl || makeGoogleMapsSearchLink(contactTrail)}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold"
-      >
-        <ExternalLink className="w-3.5 h-3.5" />
-        View on Google Maps
-      </a>
+      <div className="flex items-center gap-3">
+        <button onClick={() => onPhotos && onPhotos(trail)}
+          className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
+          <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
+        </button>
+        <a href={contactTrail.googleMapsUrl || makeGoogleMapsSearchLink(contactTrail)} target="_blank" rel="noreferrer noopener"
+          className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
+          <ExternalLink className="w-3.5 h-3.5" /> Google Maps
+        </a>
+      </div>
     </div>
   );
 }
 
-export function RestaurantCard({ restaurant }) {
+export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelete }) {
   const contactRestaurant = withContactOverride(restaurant, 'restaurants');
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
+    <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h4 className="font-semibold text-bark-800 text-sm">{restaurant.name}</h4>
           <ContactDetails item={contactRestaurant} />
           <p className="text-xs text-bark-500 mt-0.5">{restaurant.cuisine}</p>
         </div>
-        <div className="flex flex-col gap-1 flex-shrink-0 items-end">
-          <DogBadge friendly={restaurant.dogFriendly} />
-          <PriceRange range={restaurant.priceRange} />
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {editMode && (
+            <>
+              <button onClick={() => onEdit && onEdit(restaurant)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sun-100 text-bark-400 hover:text-sun-700 transition-colors" title="Edit">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDelete && onDelete(restaurant.name)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-400 hover:text-red-600 transition-colors" title="Delete">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          <div className="flex flex-col gap-1 ml-1 items-end">
+            <DogBadge friendly={restaurant.dogFriendly} />
+            <PriceRange range={restaurant.priceRange} />
+          </div>
         </div>
       </div>
       {restaurant.mustTry && (
@@ -386,20 +632,21 @@ export function RestaurantCard({ restaurant }) {
       {restaurant.tip && (
         <p className="text-xs text-bark-500 italic leading-relaxed">{restaurant.tip}</p>
       )}
-      <a
-        href={contactRestaurant.googleMapsUrl || makeGoogleMapsSearchLink(contactRestaurant)}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold"
-      >
-        <ExternalLink className="w-3.5 h-3.5" />
-        View on Google Maps
-      </a>
+      <div className="flex items-center gap-3">
+        <button onClick={() => onPhotos && onPhotos(restaurant)}
+          className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
+          <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
+        </button>
+        <a href={contactRestaurant.googleMapsUrl || makeGoogleMapsSearchLink(contactRestaurant)} target="_blank" rel="noreferrer noopener"
+          className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
+          <ExternalLink className="w-3.5 h-3.5" /> Google Maps
+        </a>
+      </div>
     </div>
   );
 }
 
-export function LodgingCard({ lodging }) {
+export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete }) {
   const contactLodging = withContactOverride(lodging, 'lodging');
   const priceClass = {
     '$$':   'text-leaf-600',
@@ -407,43 +654,85 @@ export function LodgingCard({ lodging }) {
     '$$$$': 'text-red-600',
   };
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white shadow-card">
+    <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
       <div className="flex items-start justify-between gap-2">
-        <div>
+        <div className="min-w-0 flex-1">
           <h4 className="font-semibold text-bark-800 text-sm">{lodging.name}</h4>
           <ContactDetails item={contactLodging} />
           <p className="text-xs text-bark-500 mt-0.5">{lodging.type} · {lodging.rooms}</p>
         </div>
-        <span className={`text-sm font-bold flex-shrink-0 font-display ${priceClass[lodging.priceRange] || 'text-bark-600'}`}>
-          {lodging.priceRange}
-        </span>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {editMode && (
+            <>
+              <button onClick={() => onEdit && onEdit(lodging)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sun-100 text-bark-400 hover:text-sun-700 transition-colors" title="Edit">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDelete && onDelete(lodging.name)} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-400 hover:text-red-600 transition-colors" title="Delete">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
+          <span className={`text-sm font-bold ml-1 font-display ${priceClass[lodging.priceRange] || 'text-bark-600'}`}>
+            {lodging.priceRange}
+          </span>
+        </div>
       </div>
       <div className="text-xs bg-leaf-50 text-leaf-800 border border-leaf-200 rounded-lg px-3 py-2 flex gap-2">
         <Dog className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
         <span>{lodging.petPolicy}</span>
       </div>
       <p className="text-xs text-bark-400 italic">{lodging.bookingNote}</p>
-      <a
-        href={contactLodging.googleMapsUrl || makeGoogleMapsSearchLink(contactLodging)}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold"
-      >
-        <ExternalLink className="w-3.5 h-3.5" />
-        View on Google Maps
-      </a>
+      <div className="flex items-center gap-3">
+        <button onClick={() => onPhotos && onPhotos(lodging)}
+          className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
+          <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
+        </button>
+        <a href={contactLodging.googleMapsUrl || makeGoogleMapsSearchLink(contactLodging)} target="_blank" rel="noreferrer noopener"
+          className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
+          <ExternalLink className="w-3.5 h-3.5" /> Google Maps
+        </a>
+      </div>
     </div>
   );
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
 
-export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
+export default function TripDetail({
+  trip, activeSeason, onMoreInfo,
+  isCustomTrip, onAddItem, onEditItem, onDeleteItem, onSaveTips, onDeleteTrip,
+  packingOverrides, onAddPacking, onDeletePacking,
+}) {
   const seasonTip = activeSeason !== 'all' ? trip.seasonTips?.[activeSeason] : null;
   const hasRestaurants = Array.isArray(trip.restaurants) && trip.restaurants.length > 0;
   const hasTripProfile = !!trip.tripProfile;
   const [selectedLeg, setSelectedLeg] = useState('all');
   const [attractionFilter, setAttractionFilter] = useState('all');
+  const [lightboxItem, setLightboxItem] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editModal, setEditModal] = useState(null); // { section, item } | null
+  const [confirmDelete, setConfirmDelete] = useState(null); // { section, name } | null
+
+  function handleEdit(section, item) {
+    setEditModal({ section, item });
+  }
+  function handleDelete(section, name) {
+    setConfirmDelete({ section, name });
+  }
+  function commitDelete() {
+    if (confirmDelete) onDeleteItem?.(trip.id, confirmDelete.section, confirmDelete.name);
+    setConfirmDelete(null);
+  }
+  function handleSaveItem(data) {
+    if (!editModal) return;
+    const { section, item } = editModal;
+    if (item) {
+      onEditItem?.(trip.id, section, item.name, data);
+    } else {
+      onAddItem?.(trip.id, section, data);
+    }
+    setEditModal(null);
+  }
   const selectedLegNumber = selectedLeg === 'all' ? null : Number(selectedLeg);
 
   const normalize = value => (value || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -468,9 +757,7 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
     : (() => {
       const day = trip.route.itinerary.find(d => d.day === selectedLegNumber);
       if (!day) return [];
-      const fromTo = day.title.split(/→|to|-/i).map(s => s.trim()).filter(Boolean);
-      const stopNames = trip.route.stops.map(stop => stop.name);
-      return [...fromTo, ...stopNames];
+      return day.title.split(/→|to|-/i).map(s => s.trim()).filter(Boolean);
     })();
 
   const filterByLeg = item => {
@@ -507,53 +794,69 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
     <div className="space-y-6">
       {/* Detail header */}
       <div
-        className="relative overflow-hidden rounded-2xl p-6 text-white shadow-card-hover"
+        className="relative overflow-hidden rounded-2xl px-5 py-4 text-white shadow-card-hover"
         style={{ background: `linear-gradient(140deg, ${trip.colorFrom}, ${trip.colorTo})` }}
       >
         {/* Decorative circle */}
         <div className="absolute -top-12 -right-12 w-52 h-52 rounded-full bg-white/10 pointer-events-none" />
         <div className="absolute -bottom-8 right-24 w-32 h-32 rounded-full bg-white/8 pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 relative">
-          <div>
-            <div className="text-4xl mb-2 select-none">{trip.emoji}</div>
-            <h2 className="font-display text-2xl font-bold text-white">{trip.name}</h2>
-            <p className="text-white/80 mt-1 text-sm italic font-light">{trip.tagline}</p>
-          </div>
-          <div className="grid grid-cols-3 gap-3 shrink-0 sm:grid-cols-1">
-            <StatPill icon={<MapPin className="w-4 h-4" />} value={`${trip.distanceKm} km`} label="Round trip" />
-            <StatPill icon={<Clock className="w-4 h-4" />} value={`${trip.driveHoursOneWay} hrs`} label="Total drive" />
-            <StatPill icon={<Calendar className="w-4 h-4" />} value={trip.duration} label="Duration" />
+        <div className="relative flex items-center gap-3">
+          <span className="text-2xl select-none flex-shrink-0">{trip.emoji}</span>
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-bold text-white leading-tight truncate">{trip.name}</h2>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-0.5 mt-1">
+              <span className="flex items-center gap-1 text-xs text-white/75 font-medium">
+                <MapPin className="w-3 h-3" /> {trip.distanceKm} km
+              </span>
+              <span className="flex items-center gap-1 text-xs text-white/75 font-medium">
+                <Clock className="w-3 h-3" /> {trip.driveHoursOneWay} hrs drive
+              </span>
+              <span className="flex items-center gap-1 text-xs text-white/75 font-medium">
+                <Calendar className="w-3 h-3" /> {trip.duration}
+              </span>
+            </div>
           </div>
         </div>
 
-        {hasTripProfile && (
-          <div className="mt-4 bg-white/15 backdrop-blur-sm rounded-xl p-3 grid grid-cols-3 gap-3 text-sm text-white/90 relative">
-            <ProfilePill icon={<Users className="w-4 h-4" />} label={trip.tripProfile.passengers} />
-            <ProfilePill icon={<Dog className="w-4 h-4" />} label={trip.tripProfile.pet} />
-            <ProfilePill icon={<Car className="w-4 h-4" />} label={trip.tripProfile.vehicle} />
-          </div>
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-3 relative">
+        <div className="mt-3 flex flex-wrap gap-2 relative">
           {trip.route.googleMapsUrl && (
             <a
               href={trip.route.googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl"
+              className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 transition-colors text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
             >
-              <ExternalLink className="w-4 h-4" />
-              Open in Google Maps
+              <ExternalLink className="w-3.5 h-3.5" />
+              Google Maps
             </a>
           )}
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 border border-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl"
+            className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 border border-white/30 transition-colors text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
           >
-            <Printer className="w-4 h-4" />
-            Print trip plan
+            <Printer className="w-3.5 h-3.5" />
+            Print
           </button>
+          <button
+            onClick={() => setEditMode(v => !v)}
+            className={`inline-flex items-center gap-1.5 border text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+              editMode
+                ? 'bg-sun-400 border-sun-300 text-bark-900 hover:bg-sun-500'
+                : 'bg-white/20 hover:bg-white/30 border-white/30 text-white'
+            }`}
+          >
+            {editMode ? <EyeOff className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+            {editMode ? 'Done Editing' : 'Edit'}
+          </button>
+          {isCustomTrip && editMode && (
+            <button
+              onClick={() => { if (window.confirm(`Delete "${trip.name}"? This cannot be undone.`)) onDeleteTrip?.(trip.id); }}
+              className="inline-flex items-center gap-1.5 bg-red-500/80 hover:bg-red-600 border border-red-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete
+            </button>
+          )}
         </div>
       </div>
 
@@ -618,33 +921,58 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
       <div className="space-y-3">
         <SectionLabel>Day-by-Day Itinerary</SectionLabel>
         <div className="space-y-2">
-          {trip.route.itinerary.map(day => (
-            <ItineraryDay
-              key={day.day}
-              day={day}
-              attractionFilter={attractionFilter}
-              legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
-              onMoreInfo={onMoreInfo}
-            />
-          ))}
+          {trip.route.itinerary.map(day => {
+            // Keywords from the day title (e.g. "Toronto → Kingston" → ["Toronto","Kingston"])
+            // Used to match items that have no explicit day number (older trip data uses location strings)
+            const dayCities = day.title
+              .split(/→|to\b|-/i)
+              .map(s => s.trim().toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim())
+              .filter(Boolean);
+
+            const matchesDay = item => {
+              if (item.day === day.day) return true;
+              if (item.day != null) return false; // explicitly assigned to a different day
+              // Fall back to location matching for items without a day field
+              const haystack = [item.name, item.location, item.address]
+                .filter(Boolean).join(' ').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ');
+              return dayCities.some(city => city.length > 2 && haystack.includes(city));
+            };
+
+            return (
+              <ItineraryDay
+                key={day.day}
+                day={day}
+                attractionFilter={attractionFilter}
+                legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
+                onMoreInfo={onMoreInfo}
+                dayResources={{
+                  poi:         (trip.poi         || []).filter(matchesDay),
+                  trails:      (trip.trails       || []).filter(matchesDay),
+                  restaurants: (trip.restaurants  || []).filter(matchesDay),
+                  lodging:     (trip.lodging      || []).filter(matchesDay),
+                }}
+              />
+            );
+          })}
         </div>
       </div>
 
       {/* City Attractions */}
       <CityAttractionsSection trip={trip} filterCities={null} />
 
+      {/* Filter controls — placed directly above the resource tabs */}
       <div className="bg-white border border-stone-200 rounded-2xl p-4">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h4 className="font-semibold text-bark-700 text-sm">Filter attractions</h4>
-            <p className="text-xs text-bark-500">Dog and kid filters use OpenTripMap category heuristics. Verify policies before visiting.</p>
+            <h4 className="font-semibold text-bark-700 text-sm">Filter resources</h4>
+            <p className="text-xs text-bark-400 mt-0.5">Narrow POI, trails, restaurants, and lodging by day or suitability.</p>
           </div>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex flex-wrap gap-3 items-center">
             <div className="inline-flex rounded-xl border border-stone-300 bg-cream-50 p-1 shadow-sm">
               {[
                 { id: 'all', label: 'All' },
-                { id: 'kids', label: 'Kid likely' },
-                { id: 'dogs', label: 'Dog likely' },
+                { id: 'kids', label: '👶 Kids' },
+                { id: 'dogs', label: '🐾 Dogs' },
               ].map(option => (
                 <button
                   key={option.id}
@@ -660,31 +988,27 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-3">
-              <label htmlFor="leg-filter" className="text-xs uppercase tracking-widest text-bark-500 font-semibold">
-                Leg
-              </label>
-              <select
-                id="leg-filter"
-                value={selectedLeg}
-                onChange={e => setSelectedLeg(e.target.value)}
-                className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-bark-700 shadow-sm"
-              >
-                <option value="all">All legs</option>
-                {trip.route.itinerary.map(day => (
-                  <option key={day.day} value={String(day.day)}>
-                    Day {day.day}: {day.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              id="leg-filter"
+              value={selectedLeg}
+              onChange={e => setSelectedLeg(e.target.value)}
+              className="rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-bark-700 shadow-sm"
+              aria-label="Filter by day"
+            >
+              <option value="all">All days</option>
+              {trip.route.itinerary.map(day => (
+                <option key={day.day} value={String(day.day)}>
+                  Day {day.day}: {day.title}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="poi">
-        <TabsList className={`grid w-full ${hasRestaurants ? 'grid-cols-6' : 'grid-cols-5'}`}>
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="poi" className="flex items-center gap-1.5 text-xs">
             <MapPin className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Points of Interest</span>
@@ -694,13 +1018,11 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
             <Footprints className="w-3.5 h-3.5" />
             Trails
           </TabsTrigger>
-          {hasRestaurants && (
-            <TabsTrigger value="restaurants" className="flex items-center gap-1.5 text-xs">
-              <Utensils className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Restaurants</span>
-              <span className="sm:hidden">Eat</span>
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="restaurants" className="flex items-center gap-1.5 text-xs">
+            <Utensils className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Restaurants</span>
+            <span className="sm:hidden">Eat</span>
+          </TabsTrigger>
           <TabsTrigger value="lodging" className="flex items-center gap-1.5 text-xs">
             <BedDouble className="w-3.5 h-3.5" />
             Lodging
@@ -716,48 +1038,94 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="poi" className="mt-4">
+        <TabsContent value="poi" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredPoi.length > 0 ? filteredPoi.map(p => <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p} />) : (
-              <p className="text-sm text-bark-500">No points of interest are assigned to this leg.</p>
-            )}
+            {filteredPoi.length > 0 ? filteredPoi.map(p => (
+              <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p}
+                onPhotos={setLightboxItem} editMode={editMode}
+                onEdit={item => handleEdit('poi', item)}
+                onDelete={name => handleDelete('poi', name)} />
+            )) : <p className="text-sm text-bark-500">No points of interest are assigned to this leg.</p>}
           </div>
+          {editMode && (
+            <button onClick={() => setEditModal({ section: 'poi', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors">
+              <Plus className="w-4 h-4" /> Add Point of Interest
+            </button>
+          )}
         </TabsContent>
 
-        <TabsContent value="trails" className="mt-4">
+        <TabsContent value="trails" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredTrails.length > 0 ? filteredTrails.map(t => <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t} />) : (
-              <p className="text-sm text-bark-500">No trails are assigned to this leg.</p>
-            )}
+            {filteredTrails.length > 0 ? filteredTrails.map(t => (
+              <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t}
+                onPhotos={setLightboxItem} editMode={editMode}
+                onEdit={item => handleEdit('trails', item)}
+                onDelete={name => handleDelete('trails', name)} />
+            )) : <p className="text-sm text-bark-500">No trails are assigned to this leg.</p>}
           </div>
+          {editMode && (
+            <button onClick={() => setEditModal({ section: 'trails', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors">
+              <Plus className="w-4 h-4" /> Add Trail
+            </button>
+          )}
         </TabsContent>
 
-        {hasRestaurants && (
-          <TabsContent value="restaurants" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredRestaurants.length > 0 ? filteredRestaurants.map(r => <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r} />) : (
-                <p className="text-sm text-bark-500">No restaurants are assigned to this leg.</p>
-              )}
-            </div>
-          </TabsContent>
-        )}
-
-        <TabsContent value="lodging" className="mt-4">
+        <TabsContent value="restaurants" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredLodging.length > 0 ? filteredLodging.map(l => <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l} />) : (
-              <p className="text-sm text-bark-500">No lodging is assigned to this leg.</p>
-            )}
+            {filteredRestaurants.length > 0 ? filteredRestaurants.map(r => (
+              <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r}
+                onPhotos={setLightboxItem} editMode={editMode}
+                onEdit={item => handleEdit('restaurants', item)}
+                onDelete={name => handleDelete('restaurants', name)} />
+            )) : <p className="text-sm text-bark-500">No restaurants are assigned to this leg.</p>}
           </div>
+          {editMode && (
+            <button onClick={() => setEditModal({ section: 'restaurants', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors">
+              <Plus className="w-4 h-4" /> Add Restaurant
+            </button>
+          )}
+        </TabsContent>
+
+        <TabsContent value="lodging" className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredLodging.length > 0 ? filteredLodging.map(l => (
+              <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l}
+                onPhotos={setLightboxItem} editMode={editMode}
+                onEdit={item => handleEdit('lodging', item)}
+                onDelete={name => handleDelete('lodging', name)} />
+            )) : <p className="text-sm text-bark-500">No lodging is assigned to this leg.</p>}
+          </div>
+          {editMode && (
+            <button onClick={() => setEditModal({ section: 'lodging', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors">
+              <Plus className="w-4 h-4" /> Add Lodging
+            </button>
+          )}
         </TabsContent>
 
         <TabsContent value="tips" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {Object.entries(trip.seasonTips).map(([season, tip]) => (
+            {Object.entries(trip.seasonTips || {}).map(([season, tip]) => (
               <div key={season} className="bg-white border border-stone-200 rounded-xl p-4 space-y-1 shadow-card">
                 <h4 className="font-semibold text-bark-700 text-sm">
                   {season === 'june' ? '☀️ June' : season === 'late-august' ? '🌻 Late August' : '🍂 Early September'}
                 </h4>
-                <p className="text-xs text-bark-600 leading-relaxed">{tip}</p>
+                {editMode ? (
+                  <textarea
+                    defaultValue={tip}
+                    rows={4}
+                    onBlur={e => {
+                      const updated = { ...(trip.seasonTips || {}), [season]: e.target.value };
+                      onSaveTips?.(trip.id, updated);
+                    }}
+                    className="w-full text-xs text-bark-600 leading-relaxed border border-sun-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sun-400 resize-none bg-sun-50"
+                  />
+                ) : (
+                  <p className="text-xs text-bark-600 leading-relaxed">{tip}</p>
+                )}
               </div>
             ))}
           </div>
@@ -780,9 +1148,38 @@ export default function TripDetail({ trip, activeSeason, onMoreInfo }) {
         </TabsContent>
 
         <TabsContent value="packing" className="mt-4">
-          <TripPackingList />
+          <TripPackingList editMode={editMode} packingOverrides={packingOverrides} onAdd={onAddPacking} onDelete={onDeletePacking} />
         </TabsContent>
       </Tabs>
+
+      {lightboxItem && <PlaceLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
+
+      {editModal && (
+        <EditItemModal
+          section={editModal.section}
+          initialData={editModal.item}
+          onSave={handleSaveItem}
+          onClose={() => setEditModal(null)}
+        />
+      )}
+
+      {confirmDelete && (
+        <div style={{ position:'fixed', inset:0, zIndex:99999, backgroundColor:'rgba(0,0,0,0.55)',
+                      display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}
+          onMouseDown={e => { if (e.target === e.currentTarget) setConfirmDelete(null); }}>
+          <div style={{ background:'#fff', borderRadius:16, padding:24, maxWidth:360, width:'100%', boxShadow:'0 16px 48px rgba(0,0,0,0.3)' }}
+            onMouseDown={e => e.stopPropagation()}>
+            <h3 className="font-display font-bold text-bark-900 text-base mb-2">Delete this item?</h3>
+            <p className="text-sm text-bark-600 mb-5">
+              <strong>{confirmDelete.name}</strong> will be removed from this trip. This cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 rounded-xl text-sm text-bark-600 hover:bg-stone-100 transition-colors">Cancel</button>
+              <button onClick={commitDelete} className="px-5 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,20 @@
-import { Dog, MapPin, Github } from 'lucide-react';
+import { useState } from 'react';
+import { Dog, MapPin, Github, LogIn } from 'lucide-react';
 import RoadTripPlanner from './pages/RoadTripPlanner.jsx';
+import { useAuth } from './hooks/useAuth.js';
+import AuthModal from './components/auth/AuthModal.jsx';
+import UserMenu from './components/auth/UserMenu.jsx';
 
 export default function App() {
+  const { user, loading, register, login, logout } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+
+  async function handleAuthSuccess(tab, creds) {
+    if (tab === 'login') await login(creds);
+    else await register(creds);
+    setShowAuth(false);
+  }
+
   return (
     <div className="min-h-screen font-sans text-bark-900 flex flex-col">
       {/* Header */}
@@ -38,14 +51,30 @@ export default function App() {
               <Github className="w-4 h-4" />
               <span className="hidden sm:inline text-xs">GitHub</span>
             </a>
+            {!loading && (
+              user
+                ? <UserMenu user={user} onLogout={logout} />
+                : (
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sun-500 hover:bg-sun-600 text-bark-950 text-xs font-bold shadow-sm transition-colors"
+                  >
+                    <LogIn className="w-3.5 h-3.5" /> Sign In
+                  </button>
+                )
+            )}
           </div>
         </div>
       </header>
 
       {/* Main */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 md:py-12">
-        <RoadTripPlanner />
+        <RoadTripPlanner user={user} />
       </main>
+
+      {showAuth && (
+        <AuthModal onSuccess={handleAuthSuccess} onClose={() => setShowAuth(false)} />
+      )}
 
       {/* Footer */}
       <footer className="border-t border-sun-100 bg-cream-200 py-6 mt-auto">

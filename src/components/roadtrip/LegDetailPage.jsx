@@ -1,11 +1,14 @@
-import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils, Navigation } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import TripRouteMap from './TripRouteMap';
 import { POICard, TrailCard, RestaurantCard, LodgingCard } from './TripDetail';
 import CityAttractionsSection from './CityAttractionsSection';
+import PlaceLightbox from './PlaceLightbox';
 import { OPENTRIPMAP_CITY_ATTRACTIONS } from '@/data/openTripMapCityAttractions';
 
 export default function LegDetailPage({ trip, day, onBack }) {
+  const [lightboxItem, setLightboxItem] = useState(null);
   const legMapPoints = (trip.route.mapPoints || []).filter(p => p.day === day.day);
 
   const hasMap = (day.legWaypoints && day.legWaypoints.length > 1) || legMapPoints.length > 0;
@@ -91,6 +94,38 @@ export default function LegDetailPage({ trip, day, onBack }) {
           Day {day.day}
         </div>
         <h2 className="font-display text-2xl font-bold">{day.title}</h2>
+
+        {/* Start → End waypoint strip */}
+        {(() => {
+          const segs = day.driveSegments;
+          const titleParts = day.title.split(/→/).map(s => s.trim()).filter(Boolean);
+          const startLabel = segs?.length > 0 ? segs[0].from : titleParts[0];
+          const endLabel   = segs?.length > 0 ? segs[segs.length - 1].to : titleParts[titleParts.length - 1];
+          if (!startLabel || !endLabel || startLabel === endLabel) return null;
+          return (
+            <div className="mt-3 flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-white/90">
+                <span className="w-5 h-5 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-[10px] font-bold">A</span>
+                {startLabel}
+              </span>
+              <Navigation className="w-3.5 h-3.5 text-white/50 flex-shrink-0 mx-1" />
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-white/90">
+                <span className="w-5 h-5 rounded-full bg-white/20 border border-white/40 flex items-center justify-center text-[10px] font-bold">B</span>
+                {endLabel}
+              </span>
+              {segs?.length > 0 && (() => {
+                const totalKm = segs.reduce((acc, s) => {
+                  const m = (s.distance || '').match(/[\d.]+/);
+                  return acc + (m ? parseFloat(m[0]) : 0);
+                }, 0);
+                return totalKm > 0 ? (
+                  <span className="ml-auto text-xs text-white/60 font-medium">{Math.round(totalKm)} km</span>
+                ) : null;
+              })()}
+            </div>
+          );
+        })()}
+
         {day.desc && (
           <p className="mt-2 text-sm text-white/80 leading-relaxed">{day.desc}</p>
         )}
@@ -175,7 +210,7 @@ export default function LegDetailPage({ trip, day, onBack }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legPoi.length > 0
               ? legPoi.map(p => (
-                  <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p} />
+                  <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p} onPhotos={setLightboxItem} />
                 ))
               : <p className="text-sm text-bark-500">No points of interest for this leg.</p>}
           </div>
@@ -185,7 +220,7 @@ export default function LegDetailPage({ trip, day, onBack }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legTrails.length > 0
               ? legTrails.map(t => (
-                  <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t} />
+                  <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t} onPhotos={setLightboxItem} />
                 ))
               : <p className="text-sm text-bark-500">No trails for this leg.</p>}
           </div>
@@ -196,7 +231,7 @@ export default function LegDetailPage({ trip, day, onBack }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {legRestaurants.length > 0
                 ? legRestaurants.map(r => (
-                    <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r} />
+                    <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r} onPhotos={setLightboxItem} />
                   ))
                 : <p className="text-sm text-bark-500">No restaurants for this leg.</p>}
             </div>
@@ -207,7 +242,7 @@ export default function LegDetailPage({ trip, day, onBack }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legLodging.length > 0
               ? legLodging.map(l => (
-                  <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l} />
+                  <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l} onPhotos={setLightboxItem} />
                 ))
               : <p className="text-sm text-bark-500">No lodging for this leg.</p>}
           </div>
@@ -217,6 +252,8 @@ export default function LegDetailPage({ trip, day, onBack }) {
       {legCities.length > 0 && (
         <CityAttractionsSection trip={trip} filterCities={legCities} />
       )}
+
+      {lightboxItem && <PlaceLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
     </div>
   );
 }

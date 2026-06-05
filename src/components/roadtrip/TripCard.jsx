@@ -7,7 +7,7 @@ const SEASON_LABELS = {
 };
 
 export default function TripCard({ trip, isSelected, onSelect }) {
-  const isFeatured = trip.id === 'eastern-circuit';
+  const isFeatured = trip.duration === '7 days';
   const highlights = Array.isArray(trip.highlights) ? trip.highlights : [];
 
   return (

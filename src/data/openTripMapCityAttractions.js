@@ -1569,5 +1569,201 @@ export const OPENTRIPMAP_CITY_ATTRACTIONS = {
         "dist": 4657
       }
     ]
+  },
+  "qc-nb-moncton-loop": {
+    "Brockville, ON": [
+      {
+        "xid": "Q4977802",
+        "name": "Brockville Courthouse",
+        "category": "Historic site",
+        "coords": [44.58970, -75.68660],
+        "url": "https://en.wikipedia.org/wiki/Brockville_Courthouse",
+        "dist": 130
+      },
+      {
+        "xid": "Q5000010",
+        "name": "Blockhouse Island",
+        "category": "Cultural site",
+        "coords": [44.58840, -75.68870],
+        "url": "https://en.wikipedia.org/wiki/Brockville",
+        "dist": 270
+      },
+      {
+        "xid": "Q5000011",
+        "name": "Hardy Park & Centennial Park",
+        "category": "Natural area",
+        "coords": [44.58960, -75.68600],
+        "url": "https://www.google.com/maps/search/Hardy+Park+Brockville+ON",
+        "dist": 350
+      }
+    ],
+    "Quebec City, QC": [
+      {
+        "xid": "Q174769",
+        "name": "Château Frontenac",
+        "category": "Historic site",
+        "coords": [46.81270, -71.20500],
+        "url": "https://en.wikipedia.org/wiki/Ch%C3%A2teau_Frontenac",
+        "dist": 80
+      },
+      {
+        "xid": "Q661699",
+        "name": "Plains of Abraham",
+        "category": "Historic site",
+        "coords": [46.80410, -71.22380],
+        "url": "https://en.wikipedia.org/wiki/Plains_of_Abraham",
+        "dist": 950
+      },
+      {
+        "xid": "Q2095979",
+        "name": "Place Royale",
+        "category": "Historic site",
+        "coords": [46.81050, -71.20440],
+        "url": "https://en.wikipedia.org/wiki/Place_Royale,_Quebec_City",
+        "dist": 420
+      },
+      {
+        "xid": "Q744099",
+        "name": "Citadel of Quebec",
+        "category": "Historic site",
+        "coords": [46.80760, -71.21440],
+        "url": "https://en.wikipedia.org/wiki/Citadel_of_Quebec",
+        "dist": 620
+      },
+      {
+        "xid": "Q3174097",
+        "name": "Petit-Champlain Quarter",
+        "category": "Cultural site",
+        "coords": [46.81120, -71.20360],
+        "url": "https://en.wikipedia.org/wiki/Quartier_Petit-Champlain",
+        "dist": 300
+      },
+      {
+        "xid": "Q2931024",
+        "name": "Musée de la Civilisation",
+        "category": "Museum",
+        "coords": [46.81480, -71.20260],
+        "url": "https://en.wikipedia.org/wiki/Mus%C3%A9e_de_la_Civilisation",
+        "dist": 810
+      },
+      {
+        "xid": "Q3174098",
+        "name": "Fortifications of Québec National Historic Site",
+        "category": "Historic site",
+        "coords": [46.81000, -71.21000],
+        "url": "https://en.wikipedia.org/wiki/Fortifications_of_Qu%C3%A9bec_National_Historic_Site",
+        "dist": 560
+      },
+      {
+        "xid": "Q3174099",
+        "name": "Terrasse Dufferin",
+        "category": "Cultural site",
+        "coords": [46.81270, -71.20480],
+        "url": "https://en.wikipedia.org/wiki/Dufferin_Terrace",
+        "dist": 90
+      }
+    ],
+    "Fredericton, NB": [
+      {
+        "xid": "Q2895524",
+        "name": "Beaverbrook Art Gallery",
+        "category": "Museum",
+        "coords": [45.96440, -66.64120],
+        "url": "https://en.wikipedia.org/wiki/Beaverbrook_Art_Gallery",
+        "dist": 340
+      },
+      {
+        "xid": "Q5499186",
+        "name": "Fredericton City Hall",
+        "category": "Historic site",
+        "coords": [45.96360, -66.64280],
+        "url": "https://en.wikipedia.org/wiki/City_Hall,_Fredericton",
+        "dist": 110
+      },
+      {
+        "xid": "Q3804074",
+        "name": "Kings Landing Historical Settlement",
+        "category": "Historic site",
+        "coords": [45.84100, -66.94600],
+        "url": "https://en.wikipedia.org/wiki/Kings_Landing_Historical_Settlement",
+        "dist": 27800
+      },
+      {
+        "xid": "Q3174100",
+        "name": "Science East",
+        "category": "Cultural site",
+        "coords": [45.96050, -66.63940],
+        "url": "https://en.wikipedia.org/wiki/Science_East",
+        "dist": 720
+      },
+      {
+        "xid": "Q3174101",
+        "name": "Fredericton Riverfront Trail",
+        "category": "Natural area",
+        "coords": [45.96360, -66.64310],
+        "url": "https://www.google.com/maps/search/Fredericton+Riverfront+Trail",
+        "dist": 80
+      }
+    ],
+    "Moncton, NB": [
+      {
+        "xid": "Q1082440",
+        "name": "Magnetic Hill",
+        "category": "Cultural site",
+        "coords": [46.13090, -64.85220],
+        "url": "https://en.wikipedia.org/wiki/Magnetic_Hill_(New_Brunswick)",
+        "dist": 6200
+      },
+      {
+        "xid": "Q7099875",
+        "name": "Moncton Museum",
+        "category": "Museum",
+        "coords": [46.08640, -64.77540],
+        "url": "https://en.wikipedia.org/wiki/Moncton_Museum",
+        "dist": 480
+      },
+      {
+        "xid": "Q3174102",
+        "name": "Tidal Bore Park",
+        "category": "Natural area",
+        "coords": [46.09220, -64.77350],
+        "url": "https://en.wikipedia.org/wiki/Moncton#Tidal_bore",
+        "dist": 1200
+      },
+      {
+        "xid": "Q3174103",
+        "name": "Capitol Theatre",
+        "category": "Cultural site",
+        "coords": [46.08820, -64.77700],
+        "url": "https://en.wikipedia.org/wiki/Capitol_Theatre_(Moncton)",
+        "dist": 220
+      }
+    ],
+    "Rivière-du-Loup, QC": [
+      {
+        "xid": "Q3375571",
+        "name": "Parc des chutes de la Rivière-du-Loup",
+        "category": "Natural area",
+        "coords": [47.83020, -69.54200],
+        "url": "https://en.wikipedia.org/wiki/Rivi%C3%A8re-du-Loup",
+        "dist": 650
+      },
+      {
+        "xid": "Q3174104",
+        "name": "Parc de la Pointe",
+        "category": "Natural area",
+        "coords": [47.84510, -69.55430],
+        "url": "https://www.google.com/maps/search/Parc+de+la+Pointe+Riviere-du-Loup",
+        "dist": 1800
+      },
+      {
+        "xid": "Q3174105",
+        "name": "Musée du Bas-Saint-Laurent",
+        "category": "Museum",
+        "coords": [47.83600, -69.53900],
+        "url": "https://en.wikipedia.org/wiki/Mus%C3%A9e_du_Bas-Saint-Laurent",
+        "dist": 220
+      }
+    ]
   }
 };
