@@ -21,6 +21,7 @@ function blankOverride() {
     lodging:     blankSection(),
     stops:       blankSection(),
     seasonTips:  null, // null = unchanged; object = full replacement
+    itinerary:   null, // null = use base; array = full replacement (add/edit/delete/reorder)
   };
 }
 
@@ -91,6 +92,12 @@ export function deleteItemFromTrip(tripId, section, itemName) {
   saveOverride(tripId, ov);
 }
 
+export function updateItinerary(tripId, days) {
+  const ov = getOverride(tripId);
+  ov.itinerary = days;
+  saveOverride(tripId, ov);
+}
+
 export function updateSeasonTips(tripId, tips) {
   const ov = getOverride(tripId);
   ov.seasonTips = tips;
@@ -125,6 +132,9 @@ export function applyOverride(trip, override) {
   }
   if (override.seasonTips) {
     result.seasonTips = override.seasonTips;
+  }
+  if (override.itinerary) {
+    result.route = { ...result.route, itinerary: override.itinerary };
   }
   return result;
 }

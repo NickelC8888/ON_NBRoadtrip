@@ -3,7 +3,7 @@ import { TRIPS as BASE_TRIPS } from '@/data/roadTripData';
 import {
   getCustomTrips, saveCustomTrips, addCustomTrip, updateCustomTrip, deleteCustomTrip,
   getOverrides, applyOverride,
-  addItemToTrip, editItemInTrip, deleteItemFromTrip, updateSeasonTips,
+  addItemToTrip, editItemInTrip, deleteItemFromTrip, updateSeasonTips, updateItinerary,
   getPackingOverrides, addPackingItem, deletePackingItem,
 } from '@/store/tripStore';
 import { api } from '@/lib/api';
@@ -212,6 +212,55 @@ export function useCloudTripStore(user) {
     }
   }, [pushCustomTrip, pushOverride]);
 
+  // ── Itinerary helpers ───────────────────────────────────────────────────────
+  function getCurrentItinerary(tripId) {
+    const custom = getCustomTrips().find(t => t.id === tripId);
+    if (custom) return custom.route?.itinerary || [];
+    const base = BASE_TRIPS.find(t => t.id === tripId);
+    const ov = getOverrides()[tripId];
+    return ov?.itinerary ?? (base?.route?.itinerary || []);
+  }
+
+  async function applyItineraryChange(tripId, newDays) {
+    const isCustom = getCustomTrips().some(t => t.id === tripId);
+    if (isCustom) {
+      const all = getCustomTrips().map(t =>
+        t.id !== tripId ? t : { ...t, route: { ...t.route, itinerary: newDays } }
+      );
+      saveCustomTrips(all);
+      setCustomTrips(all);
+      const trip = all.find(t => t.id === tripId);
+      if (trip) await pushCustomTrip(tripId, trip);
+    } else {
+      updateItinerary(tripId, newDays);
+      const ov = getOverrides();
+      setOverrides(ov);
+      pushOverride(tripId, ov[tripId]);
+    }
+  }
+
+  const addDay = useCallback(async (tripId, dayData) => {
+    const current = getCurrentItinerary(tripId);
+    const nextNum = current.length > 0 ? Math.max(...current.map(d => d.day)) + 1 : 1;
+    const newDay = { day: nextNum, highlights: [], ...dayData };
+    await applyItineraryChange(tripId, [...current, newDay]);
+  }, [pushCustomTrip, pushOverride]); // eslint-disable-line
+
+  const editDay = useCallback(async (tripId, dayNumber, dayData) => {
+    const current = getCurrentItinerary(tripId);
+    const newDays = current.map(d => d.day === dayNumber ? { ...d, ...dayData } : d);
+    await applyItineraryChange(tripId, newDays);
+  }, [pushCustomTrip, pushOverride]); // eslint-disable-line
+
+  const deleteDay = useCallback(async (tripId, dayNumber) => {
+    const current = getCurrentItinerary(tripId);
+    await applyItineraryChange(tripId, current.filter(d => d.day !== dayNumber));
+  }, [pushCustomTrip, pushOverride]); // eslint-disable-line
+
+  const reorderDays = useCallback(async (tripId, newDays) => {
+    await applyItineraryChange(tripId, newDays);
+  }, [pushCustomTrip, pushOverride]); // eslint-disable-line
+
   // ── Packing ─────────────────────────────────────────────────────────────────
   const addPacking = useCallback(async (categoryId, itemText) => {
     addPackingItem(categoryId, itemText);
@@ -238,6 +287,7 @@ export function useCloudTripStore(user) {
     dismissMigration,
     createTrip, editTrip, removeTrip,
     addItem, editItem, deleteItem, saveTips,
+    addDay, editDay, deleteDay, reorderDays,
     addPacking, deletePacking,
   };
 }

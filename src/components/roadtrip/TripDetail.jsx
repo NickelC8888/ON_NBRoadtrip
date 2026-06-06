@@ -3,8 +3,15 @@ import {
   MapPin, Clock, Calendar, Dog, Users, Car, ExternalLink,
   Star, Utensils, BedDouble, TreePine, XCircle, Phone, Camera,
   ChevronDown, ChevronUp, Footprints, Sun, Printer, ShoppingBag, Mail,
-  Pencil, Trash2, Plus, Eye, EyeOff,
+  Pencil, Trash2, Plus, Eye, EyeOff, GripVertical,
 } from 'lucide-react';
+import {
+  DndContext, closestCenter, PointerSensor, useSensor, useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CONTACT_OVERRIDES } from '@/data/contactOverrides';
 import TripRouteMap from './TripRouteMap';
@@ -12,6 +19,7 @@ import TripPackingList from './TripPackingList';
 import PlaceLightbox from './PlaceLightbox';
 import CityAttractionsSection from './CityAttractionsSection';
 import EditItemModal from './EditItemModal';
+import EditDayModal from './EditDayModal';
 
 // ── badges ───────────────────────────────────────────────────────────────────
 
@@ -316,7 +324,96 @@ function DayResourceList({ resources, legMapPoints, selectedCoords, onSelectCoor
 
 // ── sub-section cards ─────────────────────────────────────────────────────────
 
-function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayResources }) {
+// ── Sortable wrapper for drag-and-drop itinerary ──────────────────────────────
+
+function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, editMode, onEditDay, onDeleteDay, onReorderDays }) {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const itinerary = trip.route.itinerary;
+
+  function getDayResources(day) {
+    const dayCities = day.title
+      .split(/→|to\b|-/i)
+      .map(s => s.trim().toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim())
+      .filter(Boolean);
+    const matchesDay = item => {
+      if (item.day === day.day) return true;
+      if (item.day != null) return false;
+      const haystack = [item.name, item.location, item.address]
+        .filter(Boolean).join(' ').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ');
+      return dayCities.some(city => city.length > 2 && haystack.includes(city));
+    };
+    return {
+      poi:         (trip.poi         || []).filter(matchesDay),
+      trails:      (trip.trails       || []).filter(matchesDay),
+      restaurants: (trip.restaurants  || []).filter(matchesDay),
+      lodging:     (trip.lodging      || []).filter(matchesDay),
+    };
+  }
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return;
+    const oldIdx = itinerary.findIndex(d => String(d.day) === active.id);
+    const newIdx = itinerary.findIndex(d => String(d.day) === over.id);
+    onReorderDays(arrayMove(itinerary, oldIdx, newIdx));
+  }
+
+  if (!editMode) {
+    return (
+      <div className="space-y-2">
+        {itinerary.map(day => (
+          <ItineraryDay
+            key={day.day}
+            day={day}
+            attractionFilter={attractionFilter}
+            legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
+            onMoreInfo={onMoreInfo}
+            dayResources={getDayResources(day)}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={itinerary.map(d => String(d.day))} strategy={verticalListSortingStrategy}>
+        <div className="space-y-2">
+          {itinerary.map(day => (
+            <SortableItineraryDay
+              key={day.day}
+              day={day}
+              attractionFilter={attractionFilter}
+              legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
+              onMoreInfo={onMoreInfo}
+              dayResources={getDayResources(day)}
+              onEdit={() => onEditDay(day)}
+              onDelete={() => onDeleteDay(day.day)}
+            />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+function SortableItineraryDay({ day, onEdit, onDelete, ...props }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: String(day.day) });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative">
+      <ItineraryDay day={day} editMode onEdit={onEdit} onDelete={onDelete} dragListeners={listeners} dragAttributes={attributes} {...props} />
+    </div>
+  );
+}
+
+function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayResources, editMode, onEdit, onDelete, dragListeners, dragAttributes }) {
   const [open, setOpen] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState(null);
   const [showAllLabels, setShowAllLabels] = useState(false);
@@ -343,20 +440,41 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
 
   return (
     <div className="border border-stone-200 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-cream-100 hover:bg-cream-200 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3">
-          <span className="w-7 h-7 rounded-full bg-sun-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 font-display shadow-sm">
-            {day.day}
-          </span>
-          <span className="font-semibold text-bark-800 text-sm">{day.title}</span>
-        </div>
-        {open
-          ? <ChevronUp className="w-4 h-4 text-bark-400 flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-bark-400 flex-shrink-0" />}
-      </button>
+      <div className="flex items-stretch bg-cream-100 hover:bg-cream-200 transition-colors">
+        {editMode && (
+          <div
+            {...dragAttributes}
+            {...dragListeners}
+            className="flex items-center pl-3 pr-1 cursor-grab active:cursor-grabbing text-bark-300 hover:text-bark-500 touch-none"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+        )}
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="flex-1 flex items-center justify-between px-4 py-3 text-left min-w-0"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="w-7 h-7 rounded-full bg-sun-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 font-display shadow-sm">
+              {day.day}
+            </span>
+            <span className="font-semibold text-bark-800 text-sm truncate">{day.title}</span>
+          </div>
+          {open
+            ? <ChevronUp className="w-4 h-4 text-bark-400 flex-shrink-0 ml-2" />
+            : <ChevronDown className="w-4 h-4 text-bark-400 flex-shrink-0 ml-2" />}
+        </button>
+        {editMode && (
+          <div className="flex items-center gap-1 pr-2">
+            <button onClick={onEdit} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sun-100 text-bark-400 hover:text-sun-700 transition-colors">
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={onDelete} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-red-100 text-bark-400 hover:text-red-600 transition-colors">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
       {open && (
         <div className="border-t border-stone-100 bg-white">
           {/* Drive info + map row */}
@@ -701,6 +819,7 @@ export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete }) {
 export default function TripDetail({
   trip, activeSeason, onMoreInfo,
   isCustomTrip, onAddItem, onEditItem, onDeleteItem, onSaveTips, onDeleteTrip,
+  onAddDay, onEditDay, onDeleteDay, onReorderDays,
   packingOverrides, onAddPacking, onDeletePacking,
 }) {
   const seasonTip = activeSeason !== 'all' ? trip.seasonTips?.[activeSeason] : null;
@@ -712,6 +831,7 @@ export default function TripDetail({
   const [editMode, setEditMode] = useState(false);
   const [editModal, setEditModal] = useState(null); // { section, item } | null
   const [confirmDelete, setConfirmDelete] = useState(null); // { section, name } | null
+  const [dayModal, setDayModal] = useState(null); // null | 'new' | day object
 
   function handleEdit(section, item) {
     setEditModal({ section, item });
@@ -919,42 +1039,31 @@ export default function TripDetail({
 
       {/* Day-by-Day Itinerary — sequential, full width */}
       <div className="space-y-3">
-        <SectionLabel>Day-by-Day Itinerary</SectionLabel>
-        <div className="space-y-2">
-          {trip.route.itinerary.map(day => {
-            // Keywords from the day title (e.g. "Toronto → Kingston" → ["Toronto","Kingston"])
-            // Used to match items that have no explicit day number (older trip data uses location strings)
-            const dayCities = day.title
-              .split(/→|to\b|-/i)
-              .map(s => s.trim().toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim())
-              .filter(Boolean);
-
-            const matchesDay = item => {
-              if (item.day === day.day) return true;
-              if (item.day != null) return false; // explicitly assigned to a different day
-              // Fall back to location matching for items without a day field
-              const haystack = [item.name, item.location, item.address]
-                .filter(Boolean).join(' ').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ');
-              return dayCities.some(city => city.length > 2 && haystack.includes(city));
-            };
-
-            return (
-              <ItineraryDay
-                key={day.day}
-                day={day}
-                attractionFilter={attractionFilter}
-                legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
-                onMoreInfo={onMoreInfo}
-                dayResources={{
-                  poi:         (trip.poi         || []).filter(matchesDay),
-                  trails:      (trip.trails       || []).filter(matchesDay),
-                  restaurants: (trip.restaurants  || []).filter(matchesDay),
-                  lodging:     (trip.lodging      || []).filter(matchesDay),
-                }}
-              />
-            );
-          })}
+        <div className="flex items-center justify-between">
+          <SectionLabel>Day-by-Day Itinerary</SectionLabel>
+          {editMode && (
+            <button
+              onClick={() => setDayModal('new')}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-sun-100 hover:bg-sun-200 text-sun-800 transition-colors border border-sun-200"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Day
+            </button>
+          )}
         </div>
+        <ItineraryDayList
+          trip={trip}
+          displayedTrip={displayedTrip}
+          attractionFilter={attractionFilter}
+          onMoreInfo={onMoreInfo}
+          editMode={editMode}
+          onEditDay={day => setDayModal(day)}
+          onDeleteDay={dayNum => {
+            if (window.confirm('Remove this day? This cannot be undone.')) {
+              onDeleteDay?.(trip.id, dayNum);
+            }
+          }}
+          onReorderDays={newDays => onReorderDays?.(trip.id, newDays)}
+        />
       </div>
 
       {/* City Attractions */}
@@ -1160,6 +1269,21 @@ export default function TripDetail({
           initialData={editModal.item}
           onSave={handleSaveItem}
           onClose={() => setEditModal(null)}
+        />
+      )}
+
+      {dayModal && (
+        <EditDayModal
+          day={dayModal === 'new' ? null : dayModal}
+          onSave={data => {
+            if (dayModal === 'new') {
+              onAddDay?.(trip.id, data);
+            } else {
+              onEditDay?.(trip.id, dayModal.day, data);
+            }
+            setDayModal(null);
+          }}
+          onClose={() => setDayModal(null)}
         />
       )}
 

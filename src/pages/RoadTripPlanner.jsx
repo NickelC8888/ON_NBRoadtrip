@@ -18,7 +18,8 @@ export default function RoadTripPlanner({ user }) {
   const { trips, customTripIds, packingOverrides, cloudLoading, synced,
           migrationPending, migrateToCloud, dismissMigration,
           createTrip, removeTrip, addItem, editItem, deleteItem,
-          saveTips, addPacking, deletePacking } = store;
+          saveTips, addDay, editDay, deleteDay, reorderDays,
+          addPacking, deletePacking } = store;
 
   const filteredTrips = activeSeason === 'all'
     ? trips
@@ -252,6 +253,10 @@ export default function RoadTripPlanner({ user }) {
             onDeleteItem={deleteItem}
             onSaveTips={saveTips}
             onDeleteTrip={id => { removeTrip(id); setSelectedTripId(null); }}
+            onAddDay={addDay}
+            onEditDay={editDay}
+            onDeleteDay={deleteDay}
+            onReorderDays={reorderDays}
             packingOverrides={packingOverrides}
             onAddPacking={addPacking}
             onDeletePacking={deletePacking}
