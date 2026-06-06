@@ -108,7 +108,7 @@ export default function RoadTripPlanner({ user }) {
 
       {/* ── Hero ── */}
       <div
-        className="relative overflow-hidden rounded-3xl border border-sun-200 shadow-card"
+        className={`relative overflow-hidden rounded-3xl border border-sun-200 shadow-card ${selectedTripId ? 'hidden sm:block' : ''}`}
         style={{
           background: 'radial-gradient(ellipse at 25% 70%, #fde68a 0%, #fef3c7 45%, #fffdf5 80%)',
         }}
@@ -173,7 +173,7 @@ export default function RoadTripPlanner({ user }) {
       </div>
 
       {/* ── Season filter + New Trip ── */}
-      <div className="space-y-2.5">
+      <div className={`space-y-2.5 ${selectedTripId ? 'hidden sm:block' : ''}`}>
         <div className="flex items-center justify-between gap-4">
           <p className="text-[10px] font-display font-semibold text-bark-400 uppercase tracking-widest">
             Filter by season
@@ -211,28 +211,37 @@ export default function RoadTripPlanner({ user }) {
       </div>
 
       {/* ── Trip grid ── */}
-      {filteredTrips.length === 0 ? (
-        <div className="text-center py-16 bg-cream-200 border-2 border-dashed border-sun-200 rounded-2xl">
-          <Leaf className="w-10 h-10 mx-auto mb-3 text-leaf-400" />
-          <p className="text-base font-semibold text-bark-700">No trips for this season.</p>
-          <p className="text-sm mt-1 text-bark-400">Try a different filter.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTrips.map(trip => (
-            <TripCard
-              key={trip.id}
-              trip={trip}
-              isSelected={selectedTripId === trip.id}
-              onSelect={handleSelectTrip}
-            />
-          ))}
-        </div>
-      )}
+      <div className={selectedTripId ? 'hidden sm:block' : ''}>
+        {filteredTrips.length === 0 ? (
+          <div className="text-center py-16 bg-cream-200 border-2 border-dashed border-sun-200 rounded-2xl">
+            <Leaf className="w-10 h-10 mx-auto mb-3 text-leaf-400" />
+            <p className="text-base font-semibold text-bark-700">No trips for this season.</p>
+            <p className="text-sm mt-1 text-bark-400">Try a different filter.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTrips.map(trip => (
+              <TripCard
+                key={trip.id}
+                trip={trip}
+                isSelected={selectedTripId === trip.id}
+                onSelect={handleSelectTrip}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── Trip detail ── */}
       {selectedTrip && (
-        <div ref={detailRef} className="border-t-2 border-sun-100 pt-8 scroll-mt-20">
+        <div ref={detailRef} className="scroll-mt-20">
+          <button
+            onClick={() => setSelectedTripId(null)}
+            className="sm:hidden mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800"
+          >
+            ← All trips
+          </button>
+        <div className="border-t-2 border-sun-100 pt-8">
           <TripDetail
             trip={selectedTrip}
             activeSeason={activeSeason}
@@ -247,6 +256,7 @@ export default function RoadTripPlanner({ user }) {
             onAddPacking={addPacking}
             onDeletePacking={deletePacking}
           />
+        </div>
         </div>
       )}
 
