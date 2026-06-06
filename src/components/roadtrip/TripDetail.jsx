@@ -21,6 +21,7 @@ import CityAttractionsSection from './CityAttractionsSection';
 import EditItemModal from './EditItemModal';
 import EditDayModal from './EditDayModal';
 import NoteModal from './NoteModal';
+import WeatherSection from './WeatherSection';
 
 // ── badges ───────────────────────────────────────────────────────────────────
 
@@ -1085,6 +1086,9 @@ export default function TripDetail({
           </div>
         </div>
       </div>
+
+      {/* Weather */}
+      <WeatherSection trip={displayedTrip} activeSeason={activeSeason} />
 
       {/* Day-by-Day Itinerary — sequential, full width */}
       <div className="space-y-3">
