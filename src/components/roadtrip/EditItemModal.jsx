@@ -9,6 +9,7 @@ const FIELDS = {
     { key: 'location',    label: 'Location',    type: 'text' },
     { key: 'address',     label: 'Address',     type: 'text' },
     { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'userNotes',   label: 'My Notes',    type: 'textarea' },
     { key: 'day',         label: 'Day #',       type: 'number' },
     { key: 'kidFriendly', label: 'Kid-friendly',type: 'checkbox' },
     { key: 'dogFriendly', label: 'Dog-friendly',type: 'checkbox' },
@@ -18,6 +19,7 @@ const FIELDS = {
     { key: 'location',    label: 'Location',    type: 'text' },
     { key: 'address',     label: 'Address',     type: 'text' },
     { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'userNotes',   label: 'My Notes',    type: 'textarea' },
     { key: 'day',         label: 'Day #',       type: 'number' },
     { key: 'difficulty',  label: 'Difficulty',  type: 'select', options: ['easy', 'moderate', 'hard'] },
     { key: 'lengthKm',    label: 'Length (km)', type: 'number' },
@@ -31,6 +33,7 @@ const FIELDS = {
     { key: 'address',     label: 'Address',     type: 'text' },
     { key: 'cuisine',     label: 'Cuisine',     type: 'text' },
     { key: 'description', label: 'Notes',       type: 'textarea' },
+    { key: 'userNotes',   label: 'My Notes',    type: 'textarea' },
     { key: 'day',         label: 'Day #',       type: 'number' },
     { key: 'dogFriendly', label: 'Dog-friendly patio', type: 'checkbox' },
     { key: 'kidFriendly', label: 'Kid-friendly',type: 'checkbox' },
@@ -40,12 +43,14 @@ const FIELDS = {
     { key: 'location',    label: 'Location',    type: 'text' },
     { key: 'address',     label: 'Address',     type: 'text' },
     { key: 'description', label: 'Notes',       type: 'textarea' },
+    { key: 'userNotes',   label: 'My Notes',    type: 'textarea' },
     { key: 'day',         label: 'Night #',     type: 'number' },
     { key: 'dogFriendly', label: 'Pet-friendly',type: 'checkbox' },
   ],
   stops: [
     { key: 'name',        label: 'Name',        type: 'text',     required: true },
     { key: 'description', label: 'Description', type: 'textarea' },
+    { key: 'userNotes',   label: 'My Notes',    type: 'textarea' },
   ],
 };
 

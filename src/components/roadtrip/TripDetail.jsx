@@ -3,7 +3,7 @@ import {
   MapPin, Clock, Calendar, Dog, Users, Car, ExternalLink,
   Star, Utensils, BedDouble, TreePine, XCircle, Phone, Camera,
   ChevronDown, ChevronUp, Footprints, Sun, Printer, ShoppingBag, Mail,
-  Pencil, Trash2, Plus, Eye, EyeOff, GripVertical,
+  Pencil, Trash2, Plus, Eye, EyeOff, GripVertical, StickyNote,
 } from 'lucide-react';
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
@@ -20,6 +20,7 @@ import PlaceLightbox from './PlaceLightbox';
 import CityAttractionsSection from './CityAttractionsSection';
 import EditItemModal from './EditItemModal';
 import EditDayModal from './EditDayModal';
+import NoteModal from './NoteModal';
 
 // ── badges ───────────────────────────────────────────────────────────────────
 
@@ -324,9 +325,38 @@ function DayResourceList({ resources, legMapPoints, selectedCoords, onSelectCoor
 
 // ── sub-section cards ─────────────────────────────────────────────────────────
 
+function UserNoteBlock({ note, onNote }) {
+  return (
+    <div className="flex items-start gap-2 bg-sun-50 border border-sun-200 rounded-lg px-3 py-2">
+      <StickyNote className="w-3.5 h-3.5 text-sun-500 flex-shrink-0 mt-0.5" />
+      <p className="text-xs text-bark-700 leading-relaxed flex-1 whitespace-pre-wrap">{note}</p>
+      {onNote && (
+        <button onClick={onNote} className="text-bark-300 hover:text-sun-600 transition-colors flex-shrink-0">
+          <Pencil className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function NoteButton({ hasNote, onNote }) {
+  return (
+    <button
+      onClick={onNote}
+      className={`inline-flex items-center gap-1 text-xs font-semibold transition-colors ${
+        hasNote ? 'text-sun-600 hover:text-sun-700' : 'text-bark-400 hover:text-sun-600'
+      }`}
+      title={hasNote ? 'Edit note' : 'Add note'}
+    >
+      <StickyNote className="w-3.5 h-3.5" />
+      {hasNote ? 'Note' : 'Add note'}
+    </button>
+  );
+}
+
 // ── Sortable wrapper for drag-and-drop itinerary ──────────────────────────────
 
-function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, editMode, onEditDay, onDeleteDay, onReorderDays }) {
+function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, editMode, onEditDay, onDeleteDay, onReorderDays, onNoteDay }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
   const itinerary = trip.route.itinerary;
 
@@ -368,6 +398,7 @@ function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, e
             legMapPoints={(displayedTrip.route.mapPoints || []).filter(p => p.day === day.day)}
             onMoreInfo={onMoreInfo}
             dayResources={getDayResources(day)}
+            onNote={onNoteDay ? () => onNoteDay(day) : null}
           />
         ))}
       </div>
@@ -388,6 +419,7 @@ function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, e
               dayResources={getDayResources(day)}
               onEdit={() => onEditDay(day)}
               onDelete={() => onDeleteDay(day.day)}
+              onNote={onNoteDay ? () => onNoteDay(day) : null}
             />
           ))}
         </div>
@@ -396,7 +428,7 @@ function ItineraryDayList({ trip, displayedTrip, attractionFilter, onMoreInfo, e
   );
 }
 
-function SortableItineraryDay({ day, onEdit, onDelete, ...props }) {
+function SortableItineraryDay({ day, onEdit, onDelete, onNote, ...props }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: String(day.day) });
 
@@ -408,12 +440,12 @@ function SortableItineraryDay({ day, onEdit, onDelete, ...props }) {
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
-      <ItineraryDay day={day} editMode onEdit={onEdit} onDelete={onDelete} dragListeners={listeners} dragAttributes={attributes} {...props} />
+      <ItineraryDay day={day} editMode onEdit={onEdit} onDelete={onDelete} onNote={onNote} dragListeners={listeners} dragAttributes={attributes} {...props} />
     </div>
   );
 }
 
-function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayResources, editMode, onEdit, onDelete, dragListeners, dragAttributes }) {
+function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayResources, editMode, onEdit, onDelete, onNote, dragListeners, dragAttributes }) {
   const [open, setOpen] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState(null);
   const [showAllLabels, setShowAllLabels] = useState(false);
@@ -567,6 +599,13 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
             />
           )}
 
+          {/* User note */}
+          {day.userNotes && (
+            <div className="px-4 pb-0">
+              <UserNoteBlock note={day.userNotes} onNote={onNote} />
+            </div>
+          )}
+
           {/* Footer */}
           <div className="px-4 py-3 border-t border-stone-100 flex items-center justify-between gap-2 flex-wrap">
             {hasMap && (
@@ -582,6 +621,7 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
                 {showAllLabels ? 'Hide map labels' : 'Show all on map'}
               </button>
             )}
+            {onNote && <NoteButton hasNote={!!day.userNotes} onNote={onNote} />}
             {onMoreInfo && (
               <button
                 onClick={() => onMoreInfo(day.day)}
@@ -597,7 +637,7 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
   );
 }
 
-export function POICard({ poi, onPhotos, editMode, onEdit, onDelete }) {
+export function POICard({ poi, onPhotos, editMode, onEdit, onDelete, onNote }) {
   const contactPoi = withContactOverride(poi, 'poi');
   return (
     <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
@@ -630,6 +670,7 @@ export function POICard({ poi, onPhotos, editMode, onEdit, onDelete }) {
           <span>{poi.dogNote}</span>
         </div>
       )}
+      {poi.userNotes && <UserNoteBlock note={poi.userNotes} onNote={onNote} />}
       {poi.tags && (
         <div className="flex flex-wrap gap-1">
           {poi.tags.map(t => (
@@ -642,6 +683,7 @@ export function POICard({ poi, onPhotos, editMode, onEdit, onDelete }) {
           className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
+        {onNote && <NoteButton hasNote={!!poi.userNotes} onNote={onNote} />}
         <a href={contactPoi.googleMapsUrl || makeGoogleMapsSearchLink(contactPoi)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -651,7 +693,7 @@ export function POICard({ poi, onPhotos, editMode, onEdit, onDelete }) {
   );
 }
 
-export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete }) {
+export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete, onNote }) {
   const note = trail.samoyedNote || trail.seniorDogNote;
   const contactTrail = withContactOverride(trail, 'trails');
   return (
@@ -696,6 +738,7 @@ export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete }) {
           <span>{note}</span>
         </div>
       )}
+      {trail.userNotes && <UserNoteBlock note={trail.userNotes} onNote={onNote} />}
       <div className="flex flex-wrap items-center gap-2">
         {trail.dogFriendly && <DogBadge friendly={true} />}
         {trail.kidFriendly && <KidBadge friendly={true} />}
@@ -705,6 +748,7 @@ export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete }) {
           className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
+        {onNote && <NoteButton hasNote={!!trail.userNotes} onNote={onNote} />}
         <a href={contactTrail.googleMapsUrl || makeGoogleMapsSearchLink(contactTrail)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -714,7 +758,7 @@ export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete }) {
   );
 }
 
-export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelete }) {
+export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelete, onNote }) {
   const contactRestaurant = withContactOverride(restaurant, 'restaurants');
   return (
     <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
@@ -750,11 +794,13 @@ export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelet
       {restaurant.tip && (
         <p className="text-xs text-bark-500 italic leading-relaxed">{restaurant.tip}</p>
       )}
+      {restaurant.userNotes && <UserNoteBlock note={restaurant.userNotes} onNote={onNote} />}
       <div className="flex items-center gap-3">
         <button onClick={() => onPhotos && onPhotos(restaurant)}
           className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
+        {onNote && <NoteButton hasNote={!!restaurant.userNotes} onNote={onNote} />}
         <a href={contactRestaurant.googleMapsUrl || makeGoogleMapsSearchLink(contactRestaurant)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -764,7 +810,7 @@ export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelet
   );
 }
 
-export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete }) {
+export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete, onNote }) {
   const contactLodging = withContactOverride(lodging, 'lodging');
   const priceClass = {
     '$$':   'text-leaf-600',
@@ -800,11 +846,13 @@ export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete }) {
         <span>{lodging.petPolicy}</span>
       </div>
       <p className="text-xs text-bark-400 italic">{lodging.bookingNote}</p>
+      {lodging.userNotes && <UserNoteBlock note={lodging.userNotes} onNote={onNote} />}
       <div className="flex items-center gap-3">
         <button onClick={() => onPhotos && onPhotos(lodging)}
           className="inline-flex items-center gap-1 text-xs text-lake-600 hover:text-lake-800 font-semibold transition-colors">
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
+        {onNote && <NoteButton hasNote={!!lodging.userNotes} onNote={onNote} />}
         <a href={contactLodging.googleMapsUrl || makeGoogleMapsSearchLink(contactLodging)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -832,6 +880,7 @@ export default function TripDetail({
   const [editModal, setEditModal] = useState(null); // { section, item } | null
   const [confirmDelete, setConfirmDelete] = useState(null); // { section, name } | null
   const [dayModal, setDayModal] = useState(null); // null | 'new' | day object
+  const [noteModal, setNoteModal] = useState(null); // null | { type:'item'|'day', label, current, onSave }
 
   function handleEdit(section, item) {
     setEditModal({ section, item });
@@ -1063,6 +1112,11 @@ export default function TripDetail({
             }
           }}
           onReorderDays={newDays => onReorderDays?.(trip.id, newDays)}
+          onNoteDay={day => setNoteModal({
+            label: `Day ${day.day}: ${day.title}`,
+            current: day.userNotes,
+            onSave: notes => onEditDay?.(trip.id, day.day, { userNotes: notes }),
+          })}
         />
       </div>
 
@@ -1153,7 +1207,8 @@ export default function TripDetail({
               <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p}
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('poi', item)}
-                onDelete={name => handleDelete('poi', name)} />
+                onDelete={name => handleDelete('poi', name)}
+                onNote={() => setNoteModal({ label: p.name, current: p.userNotes, onSave: notes => onEditItem?.(trip.id, 'poi', p.name, { ...p, userNotes: notes }) })} />
             )) : <p className="text-sm text-bark-500">No points of interest are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1170,7 +1225,8 @@ export default function TripDetail({
               <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t}
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('trails', item)}
-                onDelete={name => handleDelete('trails', name)} />
+                onDelete={name => handleDelete('trails', name)}
+                onNote={() => setNoteModal({ label: t.name, current: t.userNotes, onSave: notes => onEditItem?.(trip.id, 'trails', t.name, { ...t, userNotes: notes }) })} />
             )) : <p className="text-sm text-bark-500">No trails are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1187,7 +1243,8 @@ export default function TripDetail({
               <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r}
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('restaurants', item)}
-                onDelete={name => handleDelete('restaurants', name)} />
+                onDelete={name => handleDelete('restaurants', name)}
+                onNote={() => setNoteModal({ label: r.name, current: r.userNotes, onSave: notes => onEditItem?.(trip.id, 'restaurants', r.name, { ...r, userNotes: notes }) })} />
             )) : <p className="text-sm text-bark-500">No restaurants are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1204,7 +1261,8 @@ export default function TripDetail({
               <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l}
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('lodging', item)}
-                onDelete={name => handleDelete('lodging', name)} />
+                onDelete={name => handleDelete('lodging', name)}
+                onNote={() => setNoteModal({ label: l.name, current: l.userNotes, onSave: notes => onEditItem?.(trip.id, 'lodging', l.name, { ...l, userNotes: notes }) })} />
             )) : <p className="text-sm text-bark-500">No lodging is assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1269,6 +1327,15 @@ export default function TripDetail({
           initialData={editModal.item}
           onSave={handleSaveItem}
           onClose={() => setEditModal(null)}
+        />
+      )}
+
+      {noteModal && (
+        <NoteModal
+          title={noteModal.label}
+          initialNote={noteModal.current}
+          onSave={noteModal.onSave}
+          onClose={() => setNoteModal(null)}
         />
       )}
 

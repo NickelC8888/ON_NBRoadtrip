@@ -6,6 +6,7 @@ export default function EditDayModal({ day, onSave, onClose }) {
   const isNew = !day;
   const [title, setTitle]       = useState(day?.title       ?? '');
   const [desc, setDesc]         = useState(day?.desc        ?? '');
+  const [userNotes, setUserNotes] = useState(day?.userNotes ?? '');
   const [highlights, setHighlights] = useState(day?.highlights ?? []);
   const [newHighlight, setNewHighlight] = useState('');
 
@@ -22,7 +23,7 @@ export default function EditDayModal({ day, onSave, onClose }) {
 
   function handleSave() {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), desc: desc.trim(), highlights });
+    onSave({ title: title.trim(), desc: desc.trim(), highlights, userNotes: userNotes.trim() });
   }
 
   return createPortal(
@@ -63,6 +64,20 @@ export default function EditDayModal({ day, onSave, onClose }) {
               value={desc}
               onChange={e => setDesc(e.target.value)}
               placeholder="What's happening on this day?"
+              rows={3}
+              className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-bark-800 focus:outline-none focus:border-sun-400 focus:ring-1 focus:ring-sun-300 resize-none"
+            />
+          </div>
+
+          {/* My Notes */}
+          <div>
+            <label className="block text-xs font-semibold text-bark-500 uppercase tracking-wide mb-1.5">
+              My Notes
+            </label>
+            <textarea
+              value={userNotes}
+              onChange={e => setUserNotes(e.target.value)}
+              placeholder="Personal notes for this day…"
               rows={3}
               className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-bark-800 focus:outline-none focus:border-sun-400 focus:ring-1 focus:ring-sun-300 resize-none"
             />
