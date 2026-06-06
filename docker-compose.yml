@@ -1,6 +1,9 @@
 services:
   trip-planner:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
     restart: unless-stopped
     volumes:
       - trip_data:/app/data          # persists the SQLite database
