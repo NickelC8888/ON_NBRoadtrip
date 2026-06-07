@@ -1,25 +1,38 @@
 import { useState, useRef } from 'react';
-import { MapPin, Dog, Users, Leaf, Sun, Plus, CloudOff, CheckCircle2, Upload } from 'lucide-react';
+import { MapPin, Dog, Users, Leaf, Sun, Plus, CheckCircle2, Upload, Scale } from 'lucide-react';
 import { SEASONS } from '@/data/roadTripData';
 import { useCloudTripStore } from '@/hooks/useCloudTripStore';
 import TripCard from '@/components/roadtrip/TripCard';
 import TripDetail from '@/components/roadtrip/TripDetail';
 import LegDetailPage from '@/components/roadtrip/LegDetailPage';
 import CreateTripModal from '@/components/roadtrip/CreateTripModal';
+import ComparePanel from '@/components/roadtrip/ComparePanel';
 
 export default function RoadTripPlanner({ user }) {
   const [selectedTripId, setSelectedTripId] = useState(null);
   const [activeSeason, setActiveSeason] = useState('all');
   const [selectedLeg, setSelectedLeg] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [compareIds, setCompareIds] = useState([]);
   const detailRef = useRef(null);
+
+  function handleToggleCompare(tripId) {
+    setCompareIds(prev => {
+      if (prev.includes(tripId)) return prev.filter(id => id !== tripId);
+      if (prev.length >= 2) return prev;
+      return [...prev, tripId];
+    });
+  }
+
+  const compareTrips = compareIds.map(id => trips.find(t => t.id === id)).filter(Boolean);
 
   const store = useCloudTripStore(user);
   const { trips, customTripIds, packingOverrides, cloudLoading, synced,
           migrationPending, migrateToCloud, dismissMigration,
           createTrip, removeTrip, addItem, editItem, deleteItem,
           saveTips, addDay, editDay, deleteDay, reorderDays,
-          addPacking, deletePacking } = store;
+          addPacking, deletePacking,
+          favourites, toggleFav } = store;
 
   const filteredTrips = activeSeason === 'all'
     ? trips
@@ -63,6 +76,11 @@ export default function RoadTripPlanner({ user }) {
         trip={legTrip}
         day={legDay}
         onBack={handleBackFromLeg}
+        onAddItem={addItem}
+        onEditItem={editItem}
+        onDeleteItem={deleteItem}
+        favourites={favourites}
+        onToggleFav={toggleFav}
       />
     );
   }
@@ -211,6 +229,19 @@ export default function RoadTripPlanner({ user }) {
         </div>
       </div>
 
+      {/* ── Compare hint strip ── */}
+      {compareIds.length === 1 && !selectedTripId && (
+        <div className="flex items-center gap-3 bg-leaf-50 border border-leaf-200 rounded-xl px-4 py-2.5">
+          <Scale className="w-4 h-4 text-leaf-600 flex-shrink-0" />
+          <p className="text-sm text-leaf-800 font-medium flex-1">
+            <strong>{trips.find(t => t.id === compareIds[0])?.name}</strong> selected — pick one more trip to compare.
+          </p>
+          <button onClick={() => setCompareIds([])} className="text-xs text-leaf-600 hover:text-leaf-800 font-semibold underline">
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* ── Trip grid ── */}
       <div className={selectedTripId ? 'hidden sm:block' : ''}>
         {filteredTrips.length === 0 ? (
@@ -227,11 +258,23 @@ export default function RoadTripPlanner({ user }) {
                 trip={trip}
                 isSelected={selectedTripId === trip.id}
                 onSelect={handleSelectTrip}
+                isInCompare={compareIds.includes(trip.id)}
+                onToggleCompare={handleToggleCompare}
+                compareDisabled={compareIds.length >= 2}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* ── Compare panel ── */}
+      {compareTrips.length === 2 && (
+        <ComparePanel
+          trips={compareTrips}
+          onClose={() => setCompareIds([])}
+          onViewTrip={id => { setCompareIds([]); handleSelectTrip(id); }}
+        />
+      )}
 
       {/* ── Trip detail ── */}
       {selectedTrip && (
@@ -260,6 +303,8 @@ export default function RoadTripPlanner({ user }) {
             packingOverrides={packingOverrides}
             onAddPacking={addPacking}
             onDeletePacking={deletePacking}
+            favourites={favourites}
+            onToggleFav={toggleFav}
           />
         </div>
         </div>

@@ -3,7 +3,7 @@ import {
   MapPin, Clock, Calendar, Dog, Users, Car, ExternalLink,
   Star, Utensils, BedDouble, TreePine, XCircle, Phone, Camera,
   ChevronDown, ChevronUp, Footprints, Sun, Printer, ShoppingBag, Mail,
-  Pencil, Trash2, Plus, Eye, EyeOff, GripVertical, StickyNote,
+  Pencil, Trash2, Plus, Eye, EyeOff, GripVertical, StickyNote, Heart,
 } from 'lucide-react';
 import {
   DndContext, closestCenter, PointerSensor, useSensor, useSensors,
@@ -17,7 +17,7 @@ import { CONTACT_OVERRIDES } from '@/data/contactOverrides';
 import TripRouteMap from './TripRouteMap';
 import TripPackingList from './TripPackingList';
 import PlaceLightbox from './PlaceLightbox';
-import CityAttractionsSection from './CityAttractionsSection';
+
 import EditItemModal from './EditItemModal';
 import EditDayModal from './EditDayModal';
 import NoteModal from './NoteModal';
@@ -340,6 +340,22 @@ function UserNoteBlock({ note, onNote }) {
   );
 }
 
+function FavButton({ isFavourited, onFavourite }) {
+  return (
+    <button
+      onClick={onFavourite}
+      className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors ${
+        isFavourited
+          ? 'text-red-500 hover:text-red-600'
+          : 'text-bark-300 hover:text-red-400'
+      }`}
+      title={isFavourited ? 'Remove favourite' : 'Add to favourites'}
+    >
+      <Heart className={`w-3.5 h-3.5 ${isFavourited ? 'fill-current' : ''}`} />
+    </button>
+  );
+}
+
 function NoteButton({ hasNote, onNote }) {
   return (
     <button
@@ -638,7 +654,7 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
   );
 }
 
-export function POICard({ poi, onPhotos, editMode, onEdit, onDelete, onNote }) {
+export function POICard({ poi, onPhotos, editMode, onEdit, onDelete, onNote, isFavourited, onFavourite }) {
   const contactPoi = withContactOverride(poi, 'poi');
   return (
     <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
@@ -685,6 +701,7 @@ export function POICard({ poi, onPhotos, editMode, onEdit, onDelete, onNote }) {
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
         {onNote && <NoteButton hasNote={!!poi.userNotes} onNote={onNote} />}
+        {onFavourite && <FavButton isFavourited={isFavourited} onFavourite={onFavourite} />}
         <a href={contactPoi.googleMapsUrl || makeGoogleMapsSearchLink(contactPoi)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -694,7 +711,7 @@ export function POICard({ poi, onPhotos, editMode, onEdit, onDelete, onNote }) {
   );
 }
 
-export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete, onNote }) {
+export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete, onNote, isFavourited, onFavourite }) {
   const note = trail.samoyedNote || trail.seniorDogNote;
   const contactTrail = withContactOverride(trail, 'trails');
   return (
@@ -750,6 +767,7 @@ export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete, onNote 
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
         {onNote && <NoteButton hasNote={!!trail.userNotes} onNote={onNote} />}
+        {onFavourite && <FavButton isFavourited={isFavourited} onFavourite={onFavourite} />}
         <a href={contactTrail.googleMapsUrl || makeGoogleMapsSearchLink(contactTrail)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -759,7 +777,7 @@ export function TrailCard({ trail, onPhotos, editMode, onEdit, onDelete, onNote 
   );
 }
 
-export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelete, onNote }) {
+export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelete, onNote, isFavourited, onFavourite }) {
   const contactRestaurant = withContactOverride(restaurant, 'restaurants');
   return (
     <div className={`border rounded-xl p-4 space-y-2 bg-white shadow-card ${editMode ? 'border-sun-300' : 'border-stone-200'}`}>
@@ -802,6 +820,7 @@ export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelet
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
         {onNote && <NoteButton hasNote={!!restaurant.userNotes} onNote={onNote} />}
+        {onFavourite && <FavButton isFavourited={isFavourited} onFavourite={onFavourite} />}
         <a href={contactRestaurant.googleMapsUrl || makeGoogleMapsSearchLink(contactRestaurant)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -811,7 +830,7 @@ export function RestaurantCard({ restaurant, onPhotos, editMode, onEdit, onDelet
   );
 }
 
-export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete, onNote }) {
+export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete, onNote, isFavourited, onFavourite }) {
   const contactLodging = withContactOverride(lodging, 'lodging');
   const priceClass = {
     '$$':   'text-leaf-600',
@@ -854,6 +873,7 @@ export function LodgingCard({ lodging, onPhotos, editMode, onEdit, onDelete, onN
           <Camera className="w-3.5 h-3.5" /> Photos &amp; Info
         </button>
         {onNote && <NoteButton hasNote={!!lodging.userNotes} onNote={onNote} />}
+        {onFavourite && <FavButton isFavourited={isFavourited} onFavourite={onFavourite} />}
         <a href={contactLodging.googleMapsUrl || makeGoogleMapsSearchLink(contactLodging)} target="_blank" rel="noreferrer noopener"
           className="inline-flex items-center gap-1 text-xs text-sun-700 hover:text-sun-800 font-semibold ml-auto">
           <ExternalLink className="w-3.5 h-3.5" /> Google Maps
@@ -870,6 +890,7 @@ export default function TripDetail({
   isCustomTrip, onAddItem, onEditItem, onDeleteItem, onSaveTips, onDeleteTrip,
   onAddDay, onEditDay, onDeleteDay, onReorderDays,
   packingOverrides, onAddPacking, onDeletePacking,
+  favourites, onToggleFav,
 }) {
   const seasonTip = activeSeason !== 'all' ? trip.seasonTips?.[activeSeason] : null;
   const hasRestaurants = Array.isArray(trip.restaurants) && trip.restaurants.length > 0;
@@ -903,6 +924,9 @@ export default function TripDetail({
     }
     setEditModal(null);
   }
+  const isFav = (section, name) => (favourites?.[trip.id]?.[section] || []).includes(name);
+  const toggleFav = (section, name) => onToggleFav?.(trip.id, section, name);
+
   const selectedLegNumber = selectedLeg === 'all' ? null : Number(selectedLeg);
 
   const normalize = value => (value || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -1124,9 +1148,6 @@ export default function TripDetail({
         />
       </div>
 
-      {/* City Attractions */}
-      <CityAttractionsSection trip={trip} filterCities={null} />
-
       {/* Filter controls — placed directly above the resource tabs */}
       <div className="bg-white border border-stone-200 rounded-2xl p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1212,7 +1233,8 @@ export default function TripDetail({
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('poi', item)}
                 onDelete={name => handleDelete('poi', name)}
-                onNote={() => setNoteModal({ label: p.name, current: p.userNotes, onSave: notes => onEditItem?.(trip.id, 'poi', p.name, { ...p, userNotes: notes }) })} />
+                onNote={() => setNoteModal({ label: p.name, current: p.userNotes, onSave: notes => onEditItem?.(trip.id, 'poi', p.name, { ...p, userNotes: notes }) })}
+                isFavourited={isFav('poi', p.name)} onFavourite={() => toggleFav('poi', p.name)} />
             )) : <p className="text-sm text-bark-500">No points of interest are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1230,7 +1252,8 @@ export default function TripDetail({
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('trails', item)}
                 onDelete={name => handleDelete('trails', name)}
-                onNote={() => setNoteModal({ label: t.name, current: t.userNotes, onSave: notes => onEditItem?.(trip.id, 'trails', t.name, { ...t, userNotes: notes }) })} />
+                onNote={() => setNoteModal({ label: t.name, current: t.userNotes, onSave: notes => onEditItem?.(trip.id, 'trails', t.name, { ...t, userNotes: notes }) })}
+                isFavourited={isFav('trails', t.name)} onFavourite={() => toggleFav('trails', t.name)} />
             )) : <p className="text-sm text-bark-500">No trails are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1248,7 +1271,8 @@ export default function TripDetail({
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('restaurants', item)}
                 onDelete={name => handleDelete('restaurants', name)}
-                onNote={() => setNoteModal({ label: r.name, current: r.userNotes, onSave: notes => onEditItem?.(trip.id, 'restaurants', r.name, { ...r, userNotes: notes }) })} />
+                onNote={() => setNoteModal({ label: r.name, current: r.userNotes, onSave: notes => onEditItem?.(trip.id, 'restaurants', r.name, { ...r, userNotes: notes }) })}
+                isFavourited={isFav('restaurants', r.name)} onFavourite={() => toggleFav('restaurants', r.name)} />
             )) : <p className="text-sm text-bark-500">No restaurants are assigned to this leg.</p>}
           </div>
           {editMode && (
@@ -1266,7 +1290,8 @@ export default function TripDetail({
                 onPhotos={setLightboxItem} editMode={editMode}
                 onEdit={item => handleEdit('lodging', item)}
                 onDelete={name => handleDelete('lodging', name)}
-                onNote={() => setNoteModal({ label: l.name, current: l.userNotes, onSave: notes => onEditItem?.(trip.id, 'lodging', l.name, { ...l, userNotes: notes }) })} />
+                onNote={() => setNoteModal({ label: l.name, current: l.userNotes, onSave: notes => onEditItem?.(trip.id, 'lodging', l.name, { ...l, userNotes: notes }) })}
+                isFavourited={isFav('lodging', l.name)} onFavourite={() => toggleFav('lodging', l.name)} />
             )) : <p className="text-sm text-bark-500">No lodging is assigned to this leg.</p>}
           </div>
           {editMode && (

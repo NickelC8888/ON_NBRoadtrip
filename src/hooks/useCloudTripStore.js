@@ -5,6 +5,7 @@ import {
   getOverrides, applyOverride,
   addItemToTrip, editItemInTrip, deleteItemFromTrip, updateSeasonTips, updateItinerary,
   getPackingOverrides, addPackingItem, deletePackingItem,
+  getFavourites, toggleFavourite,
 } from '@/store/tripStore';
 import { api } from '@/lib/api';
 
@@ -26,6 +27,7 @@ export function useCloudTripStore(user) {
   const [customTrips,      setCustomTrips]      = useState(() => getCustomTrips());
   const [overrides,        setOverrides]        = useState(() => getOverrides());
   const [packingOverrides, setPackingOverrides] = useState(() => getPackingOverrides());
+  const [favourites,       setFavourites]       = useState(() => getFavourites());
   const [cloudLoading,     setCloudLoading]     = useState(false);
   const [synced,           setSynced]           = useState(false);
   const [migrationPending, setMigrationPending] = useState(false);
@@ -212,6 +214,12 @@ export function useCloudTripStore(user) {
     }
   }, [pushCustomTrip, pushOverride]);
 
+  // ── Favourites ──────────────────────────────────────────────────────────────
+  const toggleFav = useCallback((tripId, section, itemName) => {
+    const updated = toggleFavourite(tripId, section, itemName);
+    setFavourites({ ...updated });
+  }, []);
+
   // ── Itinerary helpers ───────────────────────────────────────────────────────
   function getCurrentItinerary(tripId) {
     const custom = getCustomTrips().find(t => t.id === tripId);
@@ -289,5 +297,6 @@ export function useCloudTripStore(user) {
     addItem, editItem, deleteItem, saveTips,
     addDay, editDay, deleteDay, reorderDays,
     addPacking, deletePacking,
+    favourites, toggleFav,
   };
 }

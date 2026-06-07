@@ -2,6 +2,7 @@
 const CUSTOM_KEY    = 'roadtrip_custom_trips';
 const OVERRIDE_KEY  = 'roadtrip_trip_overrides';
 const PACKING_KEY   = 'roadtrip_packing_overrides';
+const FAVS_KEY      = 'roadtrip_favourites';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function load(key, fallback) {
@@ -137,6 +138,24 @@ export function applyOverride(trip, override) {
     result.route = { ...result.route, itinerary: override.itinerary };
   }
   return result;
+}
+
+// ── Favourites ────────────────────────────────────────────────────────────────
+export function getFavourites() { return load(FAVS_KEY, {}); }
+export function saveFavourites(favs) { save(FAVS_KEY, favs); }
+
+export function toggleFavourite(tripId, section, itemName) {
+  const favs = getFavourites();
+  if (!favs[tripId]) favs[tripId] = {};
+  if (!favs[tripId][section]) favs[tripId][section] = [];
+  const idx = favs[tripId][section].indexOf(itemName);
+  if (idx === -1) {
+    favs[tripId][section].push(itemName);
+  } else {
+    favs[tripId][section].splice(idx, 1);
+  }
+  saveFavourites(favs);
+  return favs;
 }
 
 // ── Packing overrides ─────────────────────────────────────────────────────────

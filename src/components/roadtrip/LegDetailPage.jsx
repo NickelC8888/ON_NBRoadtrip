@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils, Navigation } from 'lucide-react';
+import { ChevronLeft, Car, MapPin, Footprints, BedDouble, Utensils, Navigation, Pencil, EyeOff, Plus } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import TripRouteMap from './TripRouteMap';
 import { POICard, TrailCard, RestaurantCard, LodgingCard } from './TripDetail';
-import CityAttractionsSection from './CityAttractionsSection';
 import PlaceLightbox from './PlaceLightbox';
-import { OPENTRIPMAP_CITY_ATTRACTIONS } from '@/data/openTripMapCityAttractions';
+import EditItemModal from './EditItemModal';
+import NoteModal from './NoteModal';
 
-export default function LegDetailPage({ trip, day, onBack }) {
+export default function LegDetailPage({ trip, day, onBack, onAddItem, onEditItem, onDeleteItem, favourites, onToggleFav }) {
   const [lightboxItem, setLightboxItem] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editModal, setEditModal] = useState(null);
+  const [noteModal, setNoteModal] = useState(null);
+
   const legMapPoints = (trip.route.mapPoints || []).filter(p => p.day === day.day);
 
   const hasMap = (day.legWaypoints && day.legWaypoints.length > 1) || legMapPoints.length > 0;
@@ -54,22 +58,28 @@ export default function LegDetailPage({ trip, day, onBack }) {
   const legTrails      = (trip.trails      || []).filter(filterByLeg);
   const legRestaurants = (trip.restaurants || []).filter(filterByLeg);
   const legLodging     = (trip.lodging     || []).filter(filterByLeg);
-  const hasRestaurants = Array.isArray(trip.restaurants) && trip.restaurants.length > 0;
 
-  const legCities = (() => {
-    const cityData = OPENTRIPMAP_CITY_ATTRACTIONS[trip.id] || {};
-    const knownCities = Object.keys(cityData);
-    const titleParts = day.title
-      .split(/→|to|-|\|/i)
-      .map(s => s.replace(/\d+\s*km.*$/i, '').trim())
-      .filter(Boolean);
-    return knownCities.filter(city =>
-      titleParts.some(part =>
-        city.toLowerCase().includes(part.toLowerCase()) ||
-        part.toLowerCase().includes(city.toLowerCase())
-      )
-    );
-  })();
+  // Favourites helpers
+  const isFav = (section, name) => (favourites?.[trip.id]?.[section] || []).includes(name);
+  const favToggle = (section, name) => onToggleFav?.(trip.id, section, name);
+
+  // Edit helpers
+  function handleEdit(section, item) { setEditModal({ section, item }); }
+  function handleDelete(section, name) {
+    if (window.confirm(`Remove "${name}"? This cannot be undone.`)) {
+      onDeleteItem?.(trip.id, section, name);
+    }
+  }
+  function handleSaveItem(data) {
+    if (!editModal) return;
+    const { section, item } = editModal;
+    if (item) onEditItem?.(trip.id, section, item.name, data);
+    else onAddItem?.(trip.id, section, data);
+    setEditModal(null);
+  }
+  function openNote(label, current, onSave) {
+    setNoteModal({ label, current, onSave });
+  }
 
   return (
     <div className="space-y-6">
@@ -82,7 +92,20 @@ export default function LegDetailPage({ trip, day, onBack }) {
           <ChevronLeft className="w-4 h-4" />
           Back to {trip.name}
         </button>
-        <span className="text-sm text-bark-400 font-medium select-none">{trip.emoji}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setEditMode(v => !v)}
+            className={`inline-flex items-center gap-1.5 border text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+              editMode
+                ? 'bg-sun-400 border-sun-300 text-bark-900 hover:bg-sun-500'
+                : 'bg-white border-stone-200 text-bark-500 hover:border-sun-200 hover:text-bark-700'
+            }`}
+          >
+            {editMode ? <EyeOff className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+            {editMode ? 'Done' : 'Edit'}
+          </button>
+          <span className="text-sm text-bark-400 font-medium select-none">{trip.emoji}</span>
+        </div>
       </div>
 
       {/* Day title card */}
@@ -183,7 +206,7 @@ export default function LegDetailPage({ trip, day, onBack }) {
 
       {/* Tabbed resources */}
       <Tabs defaultValue="poi">
-        <TabsList className={`grid w-full ${hasRestaurants ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="poi" className="flex items-center gap-1.5 text-xs">
             <MapPin className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Points of Interest</span>
@@ -193,67 +216,149 @@ export default function LegDetailPage({ trip, day, onBack }) {
             <Footprints className="w-3.5 h-3.5" />
             Trails
           </TabsTrigger>
-          {hasRestaurants && (
-            <TabsTrigger value="restaurants" className="flex items-center gap-1.5 text-xs">
-              <Utensils className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Restaurants</span>
-              <span className="sm:hidden">Eat</span>
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="restaurants" className="flex items-center gap-1.5 text-xs">
+            <Utensils className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Restaurants</span>
+            <span className="sm:hidden">Eat</span>
+          </TabsTrigger>
           <TabsTrigger value="lodging" className="flex items-center gap-1.5 text-xs">
             <BedDouble className="w-3.5 h-3.5" />
             Lodging
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="poi" className="mt-4">
+        <TabsContent value="poi" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legPoi.length > 0
               ? legPoi.map(p => (
-                  <POICard key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`} poi={p} onPhotos={setLightboxItem} />
+                  <POICard
+                    key={`${p.sourceId || p.name}-${p.day || 'all'}-${p.location || ''}`}
+                    poi={p}
+                    onPhotos={setLightboxItem}
+                    editMode={editMode}
+                    onEdit={item => handleEdit('poi', item)}
+                    onDelete={name => handleDelete('poi', name)}
+                    onNote={() => openNote(p.name, p.userNotes, notes => onEditItem?.(trip.id, 'poi', p.name, { ...p, userNotes: notes }))}
+                    isFavourited={isFav('poi', p.name)}
+                    onFavourite={() => favToggle('poi', p.name)}
+                  />
                 ))
               : <p className="text-sm text-bark-500">No points of interest for this leg.</p>}
           </div>
+          {editMode && (
+            <button
+              onClick={() => setEditModal({ section: 'poi', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add Point of Interest
+            </button>
+          )}
         </TabsContent>
 
-        <TabsContent value="trails" className="mt-4">
+        <TabsContent value="trails" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legTrails.length > 0
               ? legTrails.map(t => (
-                  <TrailCard key={`${t.name}-${t.day || 'all'}-${t.location || ''}`} trail={t} onPhotos={setLightboxItem} />
+                  <TrailCard
+                    key={`${t.name}-${t.day || 'all'}-${t.location || ''}`}
+                    trail={t}
+                    onPhotos={setLightboxItem}
+                    editMode={editMode}
+                    onEdit={item => handleEdit('trails', item)}
+                    onDelete={name => handleDelete('trails', name)}
+                    onNote={() => openNote(t.name, t.userNotes, notes => onEditItem?.(trip.id, 'trails', t.name, { ...t, userNotes: notes }))}
+                    isFavourited={isFav('trails', t.name)}
+                    onFavourite={() => favToggle('trails', t.name)}
+                  />
                 ))
               : <p className="text-sm text-bark-500">No trails for this leg.</p>}
           </div>
+          {editMode && (
+            <button
+              onClick={() => setEditModal({ section: 'trails', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add Trail
+            </button>
+          )}
         </TabsContent>
 
-        {hasRestaurants && (
-          <TabsContent value="restaurants" className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {legRestaurants.length > 0
-                ? legRestaurants.map(r => (
-                    <RestaurantCard key={`${r.name}-${r.day || 'all'}-${r.location || ''}`} restaurant={r} onPhotos={setLightboxItem} />
-                  ))
-                : <p className="text-sm text-bark-500">No restaurants for this leg.</p>}
-            </div>
-          </TabsContent>
-        )}
+        <TabsContent value="restaurants" className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {legRestaurants.length > 0
+              ? legRestaurants.map(r => (
+                  <RestaurantCard
+                    key={`${r.name}-${r.day || 'all'}-${r.location || ''}`}
+                    restaurant={r}
+                    onPhotos={setLightboxItem}
+                    editMode={editMode}
+                    onEdit={item => handleEdit('restaurants', item)}
+                    onDelete={name => handleDelete('restaurants', name)}
+                    onNote={() => openNote(r.name, r.userNotes, notes => onEditItem?.(trip.id, 'restaurants', r.name, { ...r, userNotes: notes }))}
+                    isFavourited={isFav('restaurants', r.name)}
+                    onFavourite={() => favToggle('restaurants', r.name)}
+                  />
+                ))
+              : <p className="text-sm text-bark-500">No restaurants for this leg.</p>}
+          </div>
+          {editMode && (
+            <button
+              onClick={() => setEditModal({ section: 'restaurants', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add Restaurant
+            </button>
+          )}
+        </TabsContent>
 
-        <TabsContent value="lodging" className="mt-4">
+        <TabsContent value="lodging" className="mt-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {legLodging.length > 0
               ? legLodging.map(l => (
-                  <LodgingCard key={`${l.name}-${l.day || 'all'}-${l.location || ''}`} lodging={l} onPhotos={setLightboxItem} />
+                  <LodgingCard
+                    key={`${l.name}-${l.day || 'all'}-${l.location || ''}`}
+                    lodging={l}
+                    onPhotos={setLightboxItem}
+                    editMode={editMode}
+                    onEdit={item => handleEdit('lodging', item)}
+                    onDelete={name => handleDelete('lodging', name)}
+                    onNote={() => openNote(l.name, l.userNotes, notes => onEditItem?.(trip.id, 'lodging', l.name, { ...l, userNotes: notes }))}
+                    isFavourited={isFav('lodging', l.name)}
+                    onFavourite={() => favToggle('lodging', l.name)}
+                  />
                 ))
               : <p className="text-sm text-bark-500">No lodging for this leg.</p>}
           </div>
+          {editMode && (
+            <button
+              onClick={() => setEditModal({ section: 'lodging', item: null })}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sun-700 hover:text-sun-800 border border-sun-300 hover:border-sun-400 rounded-xl px-4 py-2 bg-sun-50 transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Add Lodging
+            </button>
+          )}
         </TabsContent>
       </Tabs>
 
-      {legCities.length > 0 && (
-        <CityAttractionsSection trip={trip} filterCities={legCities} />
+      {lightboxItem && <PlaceLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
+
+      {editModal && (
+        <EditItemModal
+          section={editModal.section}
+          initialData={editModal.item}
+          onSave={handleSaveItem}
+          onClose={() => setEditModal(null)}
+        />
       )}
 
-      {lightboxItem && <PlaceLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
+      {noteModal && (
+        <NoteModal
+          title={noteModal.label}
+          initialNote={noteModal.current}
+          onSave={noteModal.onSave}
+          onClose={() => setNoteModal(null)}
+        />
+      )}
     </div>
   );
 }
