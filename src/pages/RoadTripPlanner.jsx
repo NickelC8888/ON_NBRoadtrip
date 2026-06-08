@@ -272,7 +272,7 @@ export default function RoadTripPlanner({ user }) {
         <ComparePanel
           trips={compareTrips}
           onClose={() => setCompareIds([])}
-          onViewTrip={id => { setCompareIds([]); handleSelectTrip(id); }}
+          onViewTrip={id => { setCompareIds([]); setSelectedTripId(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         />
       )}
 
