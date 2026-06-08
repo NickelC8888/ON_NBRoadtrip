@@ -7,6 +7,7 @@ import TripDetail from '@/components/roadtrip/TripDetail';
 import LegDetailPage from '@/components/roadtrip/LegDetailPage';
 import CreateTripModal from '@/components/roadtrip/CreateTripModal';
 import ComparePanel from '@/components/roadtrip/ComparePanel';
+import ComparePage from '@/components/roadtrip/ComparePage';
 
 export default function RoadTripPlanner({ user }) {
   const [selectedTripId, setSelectedTripId] = useState(null);
@@ -14,17 +15,8 @@ export default function RoadTripPlanner({ user }) {
   const [selectedLeg, setSelectedLeg] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [compareIds, setCompareIds] = useState([]);
+  const [compareFullView, setCompareFullView] = useState(false);
   const detailRef = useRef(null);
-
-  function handleToggleCompare(tripId) {
-    setCompareIds(prev => {
-      if (prev.includes(tripId)) return prev.filter(id => id !== tripId);
-      if (prev.length >= 2) return prev;
-      return [...prev, tripId];
-    });
-  }
-
-  const compareTrips = compareIds.map(id => trips.find(t => t.id === id)).filter(Boolean);
 
   const store = useCloudTripStore(user);
   const { trips, customTripIds, packingOverrides, cloudLoading, synced,
@@ -33,6 +25,16 @@ export default function RoadTripPlanner({ user }) {
           saveTips, addDay, editDay, deleteDay, reorderDays,
           addPacking, deletePacking,
           favourites, toggleFav } = store;
+
+  const compareTrips = compareIds.map(id => trips.find(t => t.id === id)).filter(Boolean);
+
+  function handleToggleCompare(tripId) {
+    setCompareIds(prev => {
+      if (prev.includes(tripId)) return prev.filter(id => id !== tripId);
+      if (prev.length >= 2) return prev;
+      return [...prev, tripId];
+    });
+  }
 
   const filteredTrips = activeSeason === 'all'
     ? trips
@@ -56,6 +58,16 @@ export default function RoadTripPlanner({ user }) {
     if (opening) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }
+
+  if (compareFullView && compareTrips.length === 2) {
+    return (
+      <ComparePage
+        trips={compareTrips}
+        onBack={() => setCompareFullView(false)}
+        onViewTrip={id => { setCompareIds([]); setCompareFullView(false); setSelectedTripId(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+      />
+    );
   }
 
   if (selectedLeg) {
@@ -273,6 +285,7 @@ export default function RoadTripPlanner({ user }) {
           trips={compareTrips}
           onClose={() => setCompareIds([])}
           onViewTrip={id => { setCompareIds([]); setSelectedTripId(id); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          onOpenFullCompare={() => setCompareFullView(true)}
         />
       )}
 

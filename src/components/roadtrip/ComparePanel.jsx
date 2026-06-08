@@ -102,7 +102,7 @@ function SeasonsRow({ a, b }) {
   );
 }
 
-export default function ComparePanel({ trips, onClose, onViewTrip }) {
+export default function ComparePanel({ trips, onClose, onViewTrip, onOpenFullCompare }) {
   const [a, b] = trips;
 
   const poiA = (a.poi || []).length;
@@ -237,10 +237,20 @@ export default function ComparePanel({ trips, onClose, onViewTrip }) {
       {/* Seasons */}
       <SeasonsRow a={a} b={b} />
 
-      {/* Legend */}
-      <div className="px-5 py-3 border-t border-stone-100 bg-stone-50 flex items-center gap-2">
-        <span className="text-leaf-600 text-xs font-semibold">✓</span>
-        <span className="text-[11px] text-bark-400">Better value for distance/drive time (lower) and resources (more options)</span>
+      {/* Footer: legend + full compare CTA */}
+      <div className="px-5 py-3 border-t border-stone-100 bg-stone-50 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-leaf-600 text-xs font-semibold flex-shrink-0">✓</span>
+          <span className="text-[11px] text-bark-400">Better value for distance/drive time (lower) and resources (more options)</span>
+        </div>
+        {onOpenFullCompare && (
+          <button
+            onClick={onOpenFullCompare}
+            className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bark-800 hover:bg-bark-900 text-white text-xs font-bold transition-colors"
+          >
+            Full Comparison →
+          </button>
+        )}
       </div>
     </div>
   );
