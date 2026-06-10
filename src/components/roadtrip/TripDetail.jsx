@@ -1131,6 +1131,11 @@ export default function TripDetail({
         </div>
       </div>
 
+      {/* Route Overview table */}
+      {trip.route?.itinerary?.length > 0 && (
+        <RouteOverviewTable itinerary={trip.route.itinerary} />
+      )}
+
       {/* Weather */}
       <WeatherSection trip={displayedTrip} activeSeason={activeSeason} />
 
@@ -1460,6 +1465,50 @@ function StatBox({ icon, label, value }) {
         <span className="text-xs font-medium uppercase tracking-wide">{label}</span>
       </div>
       <div className="text-sm font-bold text-bark-800">{value}</div>
+    </div>
+  );
+}
+
+function RouteOverviewTable({ itinerary }) {
+  return (
+    <div className="space-y-3">
+      <SectionLabel>🗺️ Route Overview</SectionLabel>
+      <div className="bg-white border border-stone-200 rounded-2xl shadow-card overflow-hidden">
+        {/* Header row */}
+        <div className="grid grid-cols-[56px_1fr_80px_1fr] bg-stone-50 border-b border-stone-200 px-4 py-2 gap-3">
+          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Leg</span>
+          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Destination</span>
+          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Drive</span>
+          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Key Highlight</span>
+        </div>
+        {/* Data rows */}
+        {itinerary.map((day, i) => (
+          <div
+            key={day.day}
+            className={`grid grid-cols-[56px_1fr_80px_1fr] px-4 py-2.5 gap-3 items-start ${
+              i % 2 === 0 ? 'bg-white' : 'bg-stone-50/50'
+            } border-b border-stone-100 last:border-b-0`}
+          >
+            <div>
+              <span className="inline-flex items-center justify-center w-9 h-5 rounded-full bg-sun-100 text-sun-800 text-[10px] font-bold border border-sun-200">
+                Day {day.day}
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-bark-700 leading-snug">{day.title}</p>
+              {day.date && <p className="text-[10px] text-bark-400 mt-0.5">{day.date}</p>}
+            </div>
+            <div>
+              <span className={`text-xs font-medium ${day.driveTime && day.driveTime !== '—' ? 'text-leaf-700' : 'text-bark-400'}`}>
+                {day.driveTime || '—'}
+              </span>
+            </div>
+            <div>
+              <p className="text-xs text-bark-600 leading-snug">{day.highlights?.[0] || ''}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
