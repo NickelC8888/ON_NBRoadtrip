@@ -4777,6 +4777,7 @@ const ALL_TRIPS = [
           day: 1,
           date: 'Sat Aug 29',
           driveTime: '~8 hrs',
+          hotel: 'Delta Hotels by Marriott Quebec',
           title: 'Richmond Hill → Quebec City',
           desc: 'Big drive day — ~8 hrs, ~790 km. Morning departure. Rest stop at Kingston waterfront (~2.5 hrs in). Optional detour to Montmorency Falls just east of Quebec City — taller than Niagara, dog-friendly boardwalk. Arrive Quebec City and stroll Petit-Champlain for dinner.',
           driveSegments: [
@@ -4802,6 +4803,7 @@ const ALL_TRIPS = [
           day: 2,
           date: 'Sun Aug 30',
           driveTime: '—',
+          hotel: 'Delta Hotels by Marriott Quebec — $384',
           title: 'Quebec City — Full Explore Day',
           desc: 'Stay 1 full day in Quebec City. Morning: Citadelle guided tour and Changing of the Guard at 10am (book online). Afternoon: Museum of Civilization (outstanding kids\' section), then Quartier Petit-Champlain cobblestone shopping. Late afternoon: Plains of Abraham — huge dog-friendly park with St. Lawrence views.',
           highlights: ['Citadelle of Quebec + Changing of the Guard', 'Museum of Civilization', 'Plains of Abraham dog walk', 'Petit-Champlain cobblestones'],
@@ -4811,6 +4813,7 @@ const ALL_TRIPS = [
           day: 3,
           date: 'Mon Aug 31',
           driveTime: '~5 hrs',
+          hotel: 'Crowne Plaza Fredericton — $245',
           title: 'Quebec City → Fredericton',
           desc: 'Check out morning and drive ~5 hrs to Fredericton. Stop at Rivière-du-Loup — free waterfall right in town, lunch on the St. Lawrence promenade. Continue Route 185 S into NB via Edmundston, then Trans-Canada west to Fredericton. Arrive for an evening walk along the Saint John River.',
           driveSegments: [
@@ -4836,6 +4839,7 @@ const ALL_TRIPS = [
           day: 4,
           date: 'Tue Sep 1',
           driveTime: '—',
+          hotel: 'Delta Hotels by Marriott Fredericton — $323',
           title: 'Fredericton — Art, History & Riverfront',
           desc: 'Stay 1 full day in Fredericton. Start at Beaverbrook Art Gallery (genuine Dalí, free for kids). Officers\' Square Changing of the Guard (summer mornings). Stroll the Historic Garrison District craft studios and Christ Church Cathedral. 7 km Riverfront Trail along the Saint John River for dog run. Dinner at Claudine\'s (reserve ahead).',
           highlights: ['Beaverbrook Art Gallery (Dalí!)', 'Changing of the Guard, Officers\' Square', 'Historic Garrison District', 'Claudine\'s lobster benedict'],
@@ -4845,6 +4849,7 @@ const ALL_TRIPS = [
           day: 5,
           date: 'Wed Sep 2',
           driveTime: '~2 hrs',
+          hotel: 'Delta Hotels by Marriott Beausejour — $288',
           title: 'Fredericton → Moncton',
           desc: 'Mid-morning departure (~10am). ~2 hrs drive to Moncton. Spend the afternoon in Moncton — Tidal Bore Park on the Petitcodiac River (check boretime.ca), Magnetic Hill optical illusion, or settle in and explore downtown. Light travel day.',
           driveSegments: [
@@ -4863,6 +4868,7 @@ const ALL_TRIPS = [
           day: 6,
           date: 'Thu Sep 3',
           driveTime: '~4 hrs',
+          hotel: 'Winsor House Inn, St. Andrews — $749',
           title: 'Moncton → Hopewell Rocks (Low Tide 11am) + Fundy Trail + St. Martins → St. Andrews',
           desc: 'The trip\'s biggest day. Leave Moncton by 9:30am. Hopewell Rocks at LOW TIDE 11am — walk the ocean floor among the famous "flower pot" formations (plan 2 hrs). Drive ~1 hr to St. Martins for the sea caves and Fundy Trail Parkway coastal drive. Then 1.5 hrs to St. Andrews, arriving early evening.',
           driveSegments: [
@@ -4895,6 +4901,7 @@ const ALL_TRIPS = [
           day: 7,
           date: 'Fri Sep 4',
           driveTime: '~30 min',
+          hotel: 'Algonquin Resort St. Andrews — $1,047',
           title: 'St. Andrews — Whale Watching + Grand Manan Island',
           desc: 'Full day based in St. Andrews. Morning: Grand Manan Island day trip — ferry from Blacks Harbour (~30 min drive, 45 min crossing). Or book whale watching on Passamaquoddy Bay — Jolly Breeze Tall Ship (pirate dress-up, kids\' favourite) or Cruisin\' With the Whales (marine biologist crew, 5.0 stars). Afternoon: Kingsbrae Garden (alpacas, peacocks, dog-friendly). Walk Victorian Water Street for dinner.',
           highlights: ['Grand Manan Island ferry day trip', 'Whale watching Passamaquoddy Bay', 'Jolly Breeze pirate ship (kids love it)', 'Kingsbrae Garden (alpacas + peacocks)'],

@@ -1479,7 +1479,7 @@ function RouteOverviewTable({ itinerary }) {
           <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Leg</span>
           <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Destination</span>
           <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Drive</span>
-          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Key Highlight</span>
+          <span className="text-[10px] font-bold text-bark-500 uppercase tracking-widest">Hotel Stay</span>
         </div>
         {/* Data rows */}
         {itinerary.map((day, i) => (
@@ -1504,7 +1504,10 @@ function RouteOverviewTable({ itinerary }) {
               </span>
             </div>
             <div>
-              <p className="text-xs text-bark-600 leading-snug">{day.highlights?.[0] || ''}</p>
+              {day.hotel
+                ? <p className="text-xs text-bark-600 leading-snug">🛏️ {day.hotel}</p>
+                : <p className="text-xs text-bark-400">—</p>
+              }
             </div>
           </div>
         ))}
