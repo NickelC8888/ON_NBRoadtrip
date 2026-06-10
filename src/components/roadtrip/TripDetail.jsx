@@ -507,7 +507,10 @@ function ItineraryDay({ day, legMapPoints, attractionFilter, onMoreInfo, dayReso
             <span className="w-7 h-7 rounded-full bg-sun-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 font-display shadow-sm">
               {day.day}
             </span>
-            <span className="font-semibold text-bark-800 text-sm truncate">{day.title}</span>
+            <div className="min-w-0">
+              <span className="font-semibold text-bark-800 text-sm truncate block">{day.title}</span>
+              {day.date && <span className="text-[10px] text-bark-400 font-medium">{day.date}</span>}
+            </div>
           </div>
           {open
             ? <ChevronUp className="w-4 h-4 text-bark-400 flex-shrink-0 ml-2" />
@@ -1100,9 +1103,26 @@ export default function TripDetail({
                 .map((stop, i, arr) => (
                   <div key={`${stop.name}-${i}`} className="flex items-start gap-3">
                     <span className="mt-0.5 text-base flex-shrink-0">{i === 0 ? '🏠' : i === arr.length - 1 ? '🏁' : `${i}.`}</span>
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-semibold text-bark-700">{stop.name}</p>
-                      <p className="text-xs text-bark-400">{stop.night != null ? `Night ${stop.night}` : 'Drive stop'}</p>
+                      {(stop.dates || stop.nights) ? (
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          {stop.dates && (
+                            <span className="inline-flex items-center text-[10px] font-semibold bg-sun-50 text-sun-800 border border-sun-200 px-1.5 py-0.5 rounded-full">
+                              📅 {stop.dates}
+                            </span>
+                          )}
+                          {stop.nights && (
+                            <span className="inline-flex items-center text-[10px] font-semibold bg-lake-50 text-lake-700 border border-lake-200 px-1.5 py-0.5 rounded-full">
+                              🌙 {stop.nights} {stop.nights === 1 ? 'night' : 'nights'}
+                            </span>
+                          )}
+                        </div>
+                      ) : stop.description ? (
+                        <p className="text-xs text-bark-400 leading-snug mt-0.5">{stop.description}</p>
+                      ) : (
+                        <p className="text-xs text-bark-400">{stop.night != null ? `Night ${stop.night}` : 'Drive stop'}</p>
+                      )}
                     </div>
                   </div>
                 ))}
